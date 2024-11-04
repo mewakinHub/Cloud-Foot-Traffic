@@ -1,7 +1,7 @@
 from ultralytics import YOLO
 import torch
 from src.utils.custom_logger import get_custom_logger
-from deepface import DeepFace
+# from deepface import DeepFace
 
 logger = get_custom_logger(__name__)
 
@@ -36,11 +36,10 @@ class YoloV8Inference:
         }
 
     def run(self, image):
-        # results = self.model.predict(image)           # GPU   
-        result = DeepFace.analyze(image, actions=['emotion']) # CPU
-        print(result)
-        # results = self.__process_result_list(results) # cpu
-        # return results
+        results = self.model.predict(image)           # GPU           
+        # result = DeepFace.analyze(image, actions=['emotion']) # CPU
+        results = self.__process_result_list(results) # cpu
+        return results
 
     def __process_result_list(self, results):
         processed_results = []
