@@ -1,0 +1,37 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - ai-backend
+      - web-dev
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Navigate to the root directory
+        run: cd ../../  # Change directory to the project root
+
+      - name: Build AI-Server Docker image
+        run: |
+          cd AI-Server
+          docker build -t ai-server:latest .
+
+      - name: Build Web-Dev/Back-End Docker image
+        run: |
+          cd Web-Dev/Back-End
+          docker build -t backend:latest .
+
+      - name: Build Web-Dev/Front-End Docker image
+        run: |
+          cd ../Front-End
+          docker build -t frontend:latest .
+
+      - name: Deploy to AWS (or another service)
+        run: |
+          # Add deployment commands here
