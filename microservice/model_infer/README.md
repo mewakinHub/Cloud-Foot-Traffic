@@ -15,8 +15,8 @@
    docker run --rm -v $(pwd)/local_vol:/app youtube-detection-app
    
    # window (local)
-   cd ..
    docker run --rm -v C:/Users/mew/Documents/github/Cloud-Foot-Traffic/microservice/local_vol:/app youtube-detection-app
+   docker run --rm -v C:/Users/mew/Documents/github/Cloud-Foot-Traffic/microservice/local_vol:/app youtube-detection-app=
    ```
    This command maps your current directory to the `/app` directory in the container, allowing the output images to be saved directly to your host machine.
 
