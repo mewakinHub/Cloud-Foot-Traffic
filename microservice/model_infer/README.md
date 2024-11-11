@@ -1,3 +1,8 @@
+## License & Stream_URL:
+video example of Japan foot traffic from:
+https://www.youtube.com/live/gFRtAAmiFbE?si=L13Lyq4dNpBqVka3
+https://www.youtube.com/live/DjdUEyjx8GM?si=2L7zK3QC2r_oaRnB
+
 ### 3. Build and Run the Docker Container
 
 1. **Build the Docker Image**:
@@ -36,11 +41,6 @@ After the container runs, you should find two images in your current directory:
 - **Detection Model**: This example uses OpenCV's default HOG descriptor for people detection. For more accurate results, consider integrating a deep learning-based detector.
 
 This setup allows you to test the entire process on your local machine using Docker, ensuring consistency and ease of deployment when you decide to move to ECS. 
-
-
-
-## License:
-video example of Japan foot traffic from: camstreamer.com/live/stream/47239-live-dong-jing-xin-su-ge-wu-ji-ting
 
 ## requirements:
 pip install ffmpeg yt-dlp opencv-python-headless

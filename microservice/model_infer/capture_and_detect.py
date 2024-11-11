@@ -6,7 +6,7 @@ import time
 import os
 
 # Define constants
-youtube_url = 'https://www.youtube.com/live/DjdUEyjx8GM?si=tZG-w_TURjZSQtNn'
+youtube_url = 'https://www.youtube.com/live/gFRtAAmiFbE?si=L13Lyq4dNpBqVka3'
 
 output_image_path = "/app/output_images/output_frame.jpg"
 detected_image_path = "/app/output_images/detected_people.jpg"
