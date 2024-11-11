@@ -4,14 +4,11 @@ import subprocess
 import yt_dlp
 import time
 import os
+import base64
+import json
 
 # Define constants
 youtube_url = 'https://www.youtube.com/live/gFRtAAmiFbE?si=L13Lyq4dNpBqVka3'
-
-output_image_path = "/app/output_images/output_frame.jpg"
-detected_image_path = "/app/output_images/detected_people.jpg"
-temp_image_path = "/app/output_images/temp_frame.jpg"  # Temporary file path
-
 quality_threshold = 300
 capture_duration = 45  # seconds
 max_attempts = 5
@@ -66,14 +63,14 @@ def capture_best_frame():
         
         print(f"Attempt {attempts + 1}/{max_attempts} to capture frame...")
 
-        # Define FFmpeg command to save a frame to a file
+        # Define FFmpeg command to capture a single frame
         ffmpeg_command = [
             "ffmpeg",
             "-i", stream_url,
             "-frames:v", "1",  # Capture only 1 frame
             "-q:v", "2",       # High-quality image
             "-y",              # Overwrite output file
-            temp_image_path
+            "temp_frame.jpg"
         ]
 
         # Run FFmpeg command to capture a frame
@@ -81,21 +78,11 @@ def capture_best_frame():
         ffmpeg_output = result.stderr.decode()
         print("FFmpeg log:", ffmpeg_output)
 
-        # Verify if the file was created and has content
-        if not os.path.exists(temp_image_path) or os.path.getsize(temp_image_path) == 0:
-            print("Failed to capture frame: temp file is empty or missing.")
-            attempts += 1
-            if attempts % 2 == 0:  # Every 2nd failed attempt, refresh the stream URL
-                stream_url = get_stream_url(youtube_url)
-            time.sleep(retry_interval)
-            continue
-
         # Attempt to load the saved frame with OpenCV
-        frame = cv2.imread(temp_image_path)
+        frame = cv2.imread("temp_frame.jpg")
         if frame is None:
             print("Error reading frame from temp file. Retrying...")
             attempts += 1
-            os.remove(temp_image_path)  # Clean up before retrying
             time.sleep(retry_interval)
             continue
 
@@ -109,10 +96,10 @@ def capture_best_frame():
 
         if quality > quality_threshold:
             print("Captured frame meets quality threshold. Stopping capture.")
-            os.remove(temp_image_path)  # Clean up
+            os.remove("temp_frame.jpg")  # Clean up
             return True  # Success
 
-        os.remove(temp_image_path)  # Clean up after each attempt
+        os.remove("temp_frame.jpg")  # Clean up after each attempt
         attempts += 1
 
     print("Failed to capture a high-quality frame after multiple attempts.")
@@ -131,14 +118,32 @@ def overlay_text(image, text, position):
     # Draw text
     cv2.putText(image, text, position, font, font_scale, color, thickness, cv2.LINE_AA)
 
-# Execute capture and detection
-if capture_best_frame():
-    detected_frame, people_count = detect_people(best_frame)
-    overlay_text(detected_frame, f"People Count: {people_count}", (10, 30))
-    overlay_text(detected_frame, f"Source: {youtube_url}", (10, 60))
+# Function to convert image to base64
+def image_to_base64(image):
+    _, buffer = cv2.imencode('.jpg', image)
+    return base64.b64encode(buffer).decode("utf-8")
 
-    cv2.imwrite(output_image_path, best_frame)
-    cv2.imwrite(detected_image_path, detected_frame)
-    print(f"Frame saved as {output_image_path} and {detected_image_path}")
-else:
-    print("Capture and detection process failed.")
+# Execute capture and detection, and return results in JSON format
+def main():
+    if capture_best_frame():
+        detected_frame, people_count = detect_people(best_frame)
+        overlay_text(detected_frame, f"People Count: {people_count}", (10, 30))
+        overlay_text(detected_frame, f"Source: {youtube_url}", (10, 60))
+
+        # Convert images to base64
+        best_frame_base64 = image_to_base64(best_frame)
+        detected_frame_base64 = image_to_base64(detected_frame)
+
+        # Return result as JSON
+        result = {
+            "best_frame": best_frame_base64,
+            "detected_frame": detected_frame_base64,
+            "people_count": people_count
+        }
+        return json.dumps(result)
+    else:
+        return json.dumps({"error": "Capture and detection process failed."})
+
+if __name__ == "__main__":
+    result_json = main()
+    print(result_json)
