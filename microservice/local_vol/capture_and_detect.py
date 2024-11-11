@@ -6,10 +6,12 @@ import time
 import os
 
 # Define constants
-youtube_url = 'https://www.youtube.com/live/DjdUEyjx8GM?si=tZG-w_TURjZSQtNn'
-output_image_path = "/app/output_frame.jpg"
-detected_image_path = "/app/detected_people.jpg"
-temp_image_path = "/app/temp_frame.jpg"  # Temporary file path
+youtube_url = 'https://www.youtube.com/live/gFRtAAmiFbE?si=L13Lyq4dNpBqVka3'
+
+output_image_path = "/app/output_images/output_frame.jpg"
+detected_image_path = "/app/output_images/detected_people.jpg"
+temp_image_path = "/app/output_images/temp_frame.jpg"  # Temporary file path
+
 quality_threshold = 300
 capture_duration = 45  # seconds
 max_attempts = 5

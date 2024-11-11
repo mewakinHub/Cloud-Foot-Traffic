@@ -1,42 +1,41 @@
 # Foot-Traffic detection on Cloud
 
-### Project Structure
-```
-Cloud-Foot-Traffic/
-│
-├── Web-Dev/                        # Traditional deployment -> Always-On Server
-│   ├── Front-End/                  # Front-end for traditional 1st EC2 deployment
-│   │   ├── src/
-│   │   ├── Dockerfile            
-│   │   └── package.json
-│   │
-│   ├── Back-End/                   # Back-end for traditional 2nd EC2 deployment
-│   │   ├── src/
-│   │   ├── Dockerfile 
-│   │   ├── requirements.txt
-│   │   └── README.md
-│   │
-<!-- │   ├── docker-compose.yml              # NEEDED for cloud deployment? or just local -->
-│   └── Jenkinsfile                     # CI/CD for Web-Dev (Front-End and Back-End)
-│
-├── AI-Server/                      # On-Demand/Serverless microservice deployment with event-driven triggers
-│   ├── assets/                     # Assets for AI model or image
-│   ├── configs/                    # Configuration files (e.g., RTSP sources, SAMPLING_RATE)
-│   ├── outputs/                    # Output files (logs, processed data)
-│   ├── src/
-│   ├── Dockerfile                      # Dockerfile for packaging the serverless function
-│   ├── deployment.yaml             # Optional: YAML for batch API deployment
-│   ├── Jenkinsfile                     # CI/CD for serverless deployment
-│   ├── requirements.txt
-│   └── README.md
-│
-└── README.md                       # Main project README with an overview
-<!-- └── notification_system/              # Notification system scripts and logic
-    ├── notification_service.py       # Main script for handling notifications
-    └── README.md                     # Notification system documentation -->
-
-```
 NOTE: do notification needed to be code or not?
 
 
-architecture
+### Project Structure
+``` 
+Cloud-Foot-Traffic/
+├── web-app/
+│   ├── front-end/
+│   │   ├── Dockerfile
+│   │   ├── src/
+│   ├── back-end/
+│   │   ├── Dockerfile
+│   │   └── src/
+│   └── nginx/                  # for load balancer and proxy
+│       ├── Dockerfile
+│       └── nginx.conf
+│   ├── docker-compose.yml      # Docker Compose file for nginx
+│   └── Jenkinsfile             # CI/CD pipeline for both front-end and back-end
+├── microservices/
+│   ├── model_inference/
+│   │   ├── Dockerfile
+│   │   ├── src/
+│   │   ├── requirements.txt
+│   │   └── Jenkinsfile         # CI/CD pipeline for Fargate deployment
+│   └── controller/
+│       ├── src/
+│       ├── requirements.txt
+│       ├── Dockerfile          # optional: we can zipped instead of building the image
+│       └── Jenkinsfile         # CI/CD pipeline for Lambda deployment
+├── IaC/
+│   ├── deployment.yaml
+│   ├── eventbridge.yaml
+│   └── Jenkinsfile             # CI/CD for IaC deployments
+├── jenkins/
+│   ├── Dockerfile     # Dockerfile for Jenkins container (create volume for UI based cache)
+│   ├── README.md      # Step for build and deploy into dedicated EC2 instance
+│   └── jenkins.yaml   # Jenkins Configuration as Code (JCasC)
+└── README.md
+```
