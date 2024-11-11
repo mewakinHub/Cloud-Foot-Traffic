@@ -1,22 +1,26 @@
+## License & Stream_URL:
+video example of Japan foot traffic from:
+https://www.youtube.com/live/gFRtAAmiFbE?si=L13Lyq4dNpBqVka3
+https://www.youtube.com/live/DjdUEyjx8GM?si=2L7zK3QC2r_oaRnB
+
 ### 3. Build and Run the Docker Container
 
 1. **Build the Docker Image**:
    Open a terminal in the directory containing your `Dockerfile` and `capture_and_detect.py`, then run:
    ```bash
-   docker build -t youtube-detection-app .
-   docker build --no-cache -t youtube-detection-app .
+   docker build -t youtube-human-detection .
+   docker build --no-cache -t youtube-human-detection .
    ```
 
-2. **Run the Docker Container**:
+2. **Run the Docker Containerv for Local DEV (local_vol)**:
    To run the container and save the output images to your local machine, use volume mapping:
    ```bash
    # ubuntu (instance)
    cd ..
-   docker run --rm -v $(pwd)/local_vol:/app youtube-detection-app
+   docker run --rm -v $(pwd)/local_vol/output_images:/app youtube-human-detection
    
    # window (local)
-   docker run --rm -v C:/Users/mew/Documents/github/Cloud-Foot-Traffic/microservice/local_vol:/app youtube-detection-app
-   docker run --rm -v C:/Users/mew/Documents/github/Cloud-Foot-Traffic/microservice/local_vol:/app youtube-detection-app=
+   docker run --rm -v C:/Users/mew/Documents/github/Cloud-Foot-Traffic/microservice/local_vol/output_images:/app youtube-human-detection
    ```
    This command maps your current directory to the `/app` directory in the container, allowing the output images to be saved directly to your host machine.
 
@@ -36,11 +40,6 @@ After the container runs, you should find two images in your current directory:
 - **Detection Model**: This example uses OpenCV's default HOG descriptor for people detection. For more accurate results, consider integrating a deep learning-based detector.
 
 This setup allows you to test the entire process on your local machine using Docker, ensuring consistency and ease of deployment when you decide to move to ECS. 
-
-
-
-## License:
-video example of Japan foot traffic from: camstreamer.com/live/stream/47239-live-dong-jing-xin-su-ge-wu-ji-ting
 
 ## requirements:
 pip install ffmpeg yt-dlp opencv-python-headless
