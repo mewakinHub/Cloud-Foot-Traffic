@@ -8,13 +8,13 @@ def lambda_handler(event, context):
     if source == "EventBridge":
         task_payload = {
             "source": "EventBridge",
-            "records": get_batch_records_from_rds()
+            "user_configs": get_batch_records_from_rds() 
         }
     elif source == "API Gateway":
         user_record = get_single_record_from_payload(event)
         task_payload = {
             "source": "API Gateway",
-            "record": user_record
+            "user_configs": user_record                   
         }
 
     response = ecs_client.run_task(
@@ -38,3 +38,6 @@ def lambda_handler(event, context):
         }
     )
     return response
+
+def get_batch_records_from_rds():
+    select all records from RDS "config table" where monitoring status is "True"

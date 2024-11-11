@@ -1,0 +1,5 @@
+git
+docker
+workflow-aggregator
+blueocean
+aws-credentials
