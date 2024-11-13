@@ -39,5 +39,8 @@ def lambda_handler(event, context):
     )
     return response
 
+def check_excess_and_delete():
+    select all records from RDS "config table" FOR EACH user_id and check if the number of records is more than 23, delete the oldest record
+
 def get_batch_records_from_rds():
     select all records from RDS "config table" where monitoring status is "True"
