@@ -3,6 +3,7 @@
 # for AI-Server
 */__pycache__/*
 AI-Server/outputs/detection_image/
+*.zip
 
 # for Web-Dev
 
