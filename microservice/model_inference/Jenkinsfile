@@ -1,0 +1,76 @@
+pipeline {
+    agent any
+    
+    environment {
+        AWS_REGION = 'your-aws-region'
+        ECR_REPO_URI = 'your-ecr-repo-uri'  // e.g., '123456789012.dkr.ecr.us-west-2.amazonaws.com/your-repo'
+        DOCKERHUB_REPO = 'your-dockerhub-username/your-repo'
+        IMAGE_TAG = "latest"
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                // Pull the latest code from the GitHub repository
+                git 'https://github.com/mewakinHub/Cloud-Foot-Traffic.git'
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Move to the model_infer directory where the Dockerfile is located
+                    dir('model_infer') {
+                        // Build Docker image
+                        sh "docker build -t ${DOCKERHUB_REPO}:${IMAGE_TAG} ."
+                    }
+                }
+            }
+        }
+        
+        stage('Login to ECR') {
+            steps {
+                script {
+                    // Authenticate Docker to AWS ECR
+                    sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO_URI}"
+                }
+            }
+        }
+        
+        stage('Push to ECR') {
+            steps {
+                script {
+                    // Tag the image for ECR and push
+                    sh "docker tag ${DOCKERHUB_REPO}:${IMAGE_TAG} ${ECR_REPO_URI}:${IMAGE_TAG}"
+                    sh "docker push ${ECR_REPO_URI}:${IMAGE_TAG}"
+                }
+            }
+        }
+        
+        stage('Login to Docker Hub') {
+            steps {
+                script {
+                    // Authenticate Docker to Docker Hub
+                    sh "echo ${env.DOCKERHUB_PASSWORD} | docker login -u ${env.DOCKERHUB_USERNAME} --password-stdin"
+                }
+            }
+        }
+        
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    // Push the image to Docker Hub
+                    sh "docker push ${DOCKERHUB_REPO}:${IMAGE_TAG}"
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            // Clean up the Docker environment
+            sh 'docker rmi ${DOCKERHUB_REPO}:${IMAGE_TAG} || true'
+            sh 'docker rmi ${ECR_REPO_URI}:${IMAGE_TAG} || true'
+        }
+    }
+}

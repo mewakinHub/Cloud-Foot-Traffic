@@ -1,0 +1,22 @@
+# Use an official Python runtime as a parent image
+FROM python:3.9-slim
+
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y curl && \
+    apt-get install -y ffmpeg && \
+    pip install yt-dlp opencv-python-headless numpy requests Pillow
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the current directory contents into the container at /app
+# COPY . /app
+COPY temp.py /app/
+# COPY cookie.txt /app/cookie.txt
+
+# Define a volume for output images (this will create a Docker-managed volume)
+VOLUME /app/local_vol/output_images
+
+# Run the application
+CMD ["python", "temp.py"]
