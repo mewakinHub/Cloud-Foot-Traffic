@@ -21,6 +21,7 @@ https://www.youtube.com/live/DjdUEyjx8GM?si=2L7zK3QC2r_oaRnB
    
    # window (local)
    docker run --rm -v C:/Users/mew/Documents/github/Cloud-Foot-Traffic/microservice/local_vol/output_images:/app youtube-human-detection
+   docker run --rm youtube-human-detection
    ```
    This command maps your current directory to the `/app` directory in the container, allowing the output images to be saved directly to your host machine.
 
