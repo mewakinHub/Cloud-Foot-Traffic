@@ -6,6 +6,7 @@ import time
 import os
 import base64
 import json
+from datetime import datetime
 
 # Define constants
 youtube_url = 'https://www.youtube.com/live/gFRtAAmiFbE?si=L13Lyq4dNpBqVka3'
@@ -14,17 +15,20 @@ capture_duration = 45  # seconds
 max_attempts = 5
 retry_interval = 5  # seconds between retries
 
-# Initialize variables
 start_time = time.time()
 best_frame = None
 best_quality = 0
 
-# Function to retrieve a direct video URL using yt-dlp
 def get_stream_url(youtube_url):
     try:
         ydl_opts = {
-            'format': 'best[height<=1080]',  # Restrict to 1080p or lower for stability
-            'quiet': True
+            'format': '96',
+            'quiet': True,
+            'cookiefile': './cookie.txt',
+            'http_headers': {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+                'Accept-Language': 'en-US,en;q=0.9',
+            }
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(youtube_url, download=False)
@@ -125,6 +129,16 @@ def image_to_base64(image):
 
 # Execute capture and detection, and return results in JSON format
 def main():
+    static_config = {
+        "user_id": "user_1",
+        "DATE-TIME": datetime.now().isoformat(),  # Dynamically generate current date and time
+        "config": {
+            "Monitoring_status": True,
+            "streaming_URL": "https://example.com/stream",
+            "email": "user@example.com"
+        }
+    }
+    
     if capture_best_frame():
         detected_frame, people_count = detect_people(best_frame)
         overlay_text(detected_frame, f"People Count: {people_count}", (10, 30))
@@ -136,13 +150,18 @@ def main():
 
         # Return result as JSON
         result = {
-            "best_frame": best_frame_base64,
-            "detected_frame": detected_frame_base64,
-            "people_count": people_count
+            **static_config,
+            "result": {
+                "people_count": people_count
+            },
+            "processed_detection_image": detected_frame_base64
         }
         return json.dumps(result)
     else:
-        return json.dumps({"error": "Capture and detection process failed."})
+        return json.dumps({
+            **static_config,
+            "error": "Capture and detection process failed."
+        })
 
 if __name__ == "__main__":
     result_json = main()
