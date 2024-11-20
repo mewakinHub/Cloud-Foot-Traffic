@@ -87,6 +87,7 @@ def capture_best_frame():
     global best_frame, best_quality
     attempts = 0
     stream_url = get_stream_url(youtube_url)
+    print("Stream URL:", stream_url)
     
     while attempts < max_attempts and (time.time() - start_time) < capture_duration:
         if not stream_url:

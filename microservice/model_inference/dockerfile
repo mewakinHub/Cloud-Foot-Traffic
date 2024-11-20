@@ -12,11 +12,12 @@ WORKDIR /app
 
 # Copy the current directory contents into the container at /app
 # COPY . /app
-COPY temp.py /app/
-# COPY cookie.txt /app/cookie.txt
+# COPY temp.py /app/
+COPY cookie.txt /app/cookie.txt
+COPY capture_and_detect.py /app/
 
 # Define a volume for output images (this will create a Docker-managed volume)
-VOLUME /app/local_vol/output_images
+# VOLUME /app/local_vol/output_images
 
 # Run the application
-CMD ["python", "temp.py"]
+CMD ["python", "capture_and_detect.py"]
