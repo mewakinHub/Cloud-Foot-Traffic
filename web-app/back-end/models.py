@@ -1,28 +1,20 @@
-from sqlalchemy import Column, DateTime, Integer, String, Text, ForeignKey
-from sqlalchemy.orm import relationship
-from database import Base
+from sqlalchemy import Column, Integer, String, DateTime, Text
+from sqlalchemy.ext.declarative import declarative_base
 
-class Result(Base):
-    __tablename__ = 'Result'
-
-    result_id = Column(Integer, primary_key=True, nullable=False,  autoincrement=True)
-    username = Column(String(255), ForeignKey('Config.username'), nullable=False)
-    DATE_TIME = Column(DateTime, nullable=False)
-    config = Column(String(255), nullable=True)
-    result = Column(Integer, nullable=False)
-    processed_detection_image = Column(Text, nullable=False)
-
-    # Relationship to the User table to access the related user
-    user = relationship("Config", back_populates="data_entries")
+Base = declarative_base()
 
 class Config(Base):
-    __tablename__ = 'Config'
-
-    username = Column(String(255), primary_key=True, nullable=False)
+    __tablename__ = "Config"
+    username = Column(String, primary_key=True, unique=True, index=True, nullable=False)
     Monitoring_status = Column(Integer, nullable=False)
-    streaming_URL = Column(Text, nullable=False)
-    email = Column(String(255))
+    streaming_URL = Column(String, nullable=True)
+    email = Column(String, nullable=True)
 
-    # Relationship to the Data table for accessing related data entries
-    data_entries = relationship("Result", back_populates="user")
-
+class Result(Base):
+    __tablename__ = "Result"
+    result_id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, nullable=False)
+    DATE_TIME = Column(DateTime, nullable=False)
+    config = Column(String, nullable=True)
+    result = Column(Integer, nullable=False)
+    processed_detection_image = Column(Text, nullable=True)
