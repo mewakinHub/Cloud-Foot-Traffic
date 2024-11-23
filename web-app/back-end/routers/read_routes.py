@@ -26,12 +26,12 @@ def get_all_configs(db: Session = Depends(get_db)):
     configs = db.query(Config).all()
     return configs
 
-@router.get("/results", response_model=List[ResultModel])
-def get_selected_results(db: Session = Depends(get_db)):
+@router.get("/results/{username}", response_model=List[ResultModel])
+def get_selected_results(username:str, db: Session = Depends(get_db)):
     # Query specific columns from the Result table
     results = (
         db.query(Result.username, Result.DATE_TIME, Result.config, Result.result)
-        .all()
+        .filter(Result.username == username)
     )
     
     # Convert the query results into a list of dictionaries
