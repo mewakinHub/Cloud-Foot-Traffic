@@ -28,11 +28,8 @@ docker login -u mewakin
    
    # window (local pc. but no volume)
    docker run --rm mewakin/youtube-shotstack-detection
-   ```PS C:\Users\mew\Documents\github\Cloud-Foot-Traffic\microservice\model_inference>    docker run --rm -v C:/Users/mew/Documents/github/Cloud-Foot-Traffic/microservice/local_vol/output_images:/app/local_vol/output_images mewakin/youtube-shotstack-detection
->>
-Failed to submit render job: {"success":true,"message":"Bad Request","response":{"error":{"name":"ValidationError","details":[{"message":"\"fps\" must be one of [12, 15, 23.976, 24, 25, 29.97, 30, 48, 50, 59.94, 60]","path":["output","fps"],"type":"any.allowOnly","context":{"value":1,"valids":[12,15,23.976,24,25,29.97,30,48,50,59.94,60],"key":"fps","label":"fps"}}]}}}
-Failed to start render job.
-PS C:\Users\mew\Documents\github\Cloud-Foot-Traffic\microservice\model_inference> 
+   ```
+
    This command maps your current directory to the `/app` directory in the container, allowing the output images to be saved directly to your host machine.
 
    The --rm flag in Docker is used with the docker run command to automatically remove a container once it exits. This ensures that stopped containers don't consume system resources or clutter your list of containers.

@@ -25,7 +25,6 @@ start_time = time.time()
 best_frame = None
 best_quality = 0
 
-
 # Shotstack API configuration
 SHOTSTACK_API_KEY = "pG9EMlF4g5awLHozfjyWeqzwLa6QPfG05IAHmS3u"
 SHOTSTACK_API_URL = "https://api.shotstack.io/stage/render"

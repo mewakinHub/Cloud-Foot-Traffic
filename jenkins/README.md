@@ -2,6 +2,11 @@
 
 This repository contains configuration files and instructions to set up Jenkins for managing CI/CD pipelines in our AWS environment.
 
+## Website & Password [Group Project]
+
+- **website**: http://18.142.225.7:8080
+- **password**: 716e784616324eefade98c9563bfb648
+
 ## Table of Contents
 1. [Prerequisites](#prerequisites)
 2. [Setup Instructions](#setup-instructions)
@@ -15,6 +20,10 @@ This repository contains configuration files and instructions to set up Jenkins 
 - **Private Key Files**: You’ll need the private key files (`bastionG9.pem` and `group9Key.pem`) to connect to the bastion server and the Jenkins server securely.
 
 ### Setup Instructions
+
+local PC port: 3307
+-L for local
+ssh -i bastion.pem -L 3307:des424-g09-db.couuhhmohu3z.us-east-1.rds.amazonaws.com:3306 ubuntu@54.81.57.229
 
 1. **Clone the Repository**:
 
@@ -34,6 +43,7 @@ This repository contains configuration files and instructions to set up Jenkins 
     docker buildx build --platform linux/arm64 -t mewakin/cloud-custom-jenkins .
 
     docker push mewakin/cloud-custom-jenkins
+    docker pull mewakin/cloud-custom-jenkins
     ```
 
 3. **Run the Jenkins Container with Persistent Storage**:
