@@ -8,7 +8,7 @@ const ResultManagement: React.FC = () => {
   const [createData, setCreateData] = useState({
     username: "",
     config: "",
-    result: 0,
+    result: "",
     image_url: "",
   });
 
@@ -20,7 +20,6 @@ const ResultManagement: React.FC = () => {
     try {
       const response = await api.post("/create/result", createData);
       alert(`Result created successfully: ${JSON.stringify(response.data)}`);
-      setCreateData({ username: "", config: "", result: 0, image_url: "" }); // Reset form
     } catch (error: any) {
       console.error(error);
       alert(`Error creating result: ${error.response?.data?.detail || error.message}`);
@@ -72,8 +71,8 @@ const ResultManagement: React.FC = () => {
             <input
               type="number"
               value={createData.result}
-              onChange={(e) => setCreateData({ ...createData, result: Number(e.target.value) })}
-              placeholder="Enter result"
+              onChange={(e) => setCreateData({ ...createData, result: e.target.value })}
+              placeholder="Enter result (can be blank)"
             />
           </label>
         </div>
