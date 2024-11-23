@@ -4,3 +4,6 @@
 [submodule "web-app/front-end/nextjs"]
 	path = web-app/front-end/nextjs
 	url = https://github.com/Ranviee0/frontend-cloudProj
+[submodule "web-app/front-end"]
+	path = web-app/front-end
+	url = https://github.com/Ranviee0/frontend-cloudProj
