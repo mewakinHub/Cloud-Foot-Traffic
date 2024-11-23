@@ -2,34 +2,21 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Chart, { ChartConfiguration } from 'chart.js/auto';
-import api from "../../../utils/api";
+import api from "../../utils/api";
 
-const UserResultsGraph: React.FC = () => {
+interface GraphProps {
+  username: string; // Username passed as a prop
+}
+
+const Graph: React.FC<GraphProps> = ({ username }) => {
   const chartRef = useRef<HTMLCanvasElement | null>(null);
   const [chartInstance, setChartInstance] = useState<Chart | null>(null);
-  const [username, setUsername] = useState("");
-  const [usernames, setUsernames] = useState<string[]>([]);
-
-  useEffect(() => {
-    fetchUsernames();
-  }, []);
 
   useEffect(() => {
     if (username) {
       fetchResults();
     }
   }, [username]);
-
-  const fetchUsernames = async () => {
-    try {
-      const response = await api.get("/read/configs");
-      const data: { username: string }[] = response.data;
-      setUsernames(data.map((entry) => entry.username));
-    } catch (error: any) {
-      console.error(error);
-      alert(`Error fetching usernames: ${error.response?.data?.detail || error.message}`);
-    }
-  };
 
   const fetchResults = async () => {
     try {
@@ -80,46 +67,15 @@ const UserResultsGraph: React.FC = () => {
     }
   };
 
-  const handleDownload = async () => {
-    try {
-      const response = await api.get(`/download/${username}`, {
-        responseType: 'blob',
-      });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `${username}_data.zip`); // Change file extension as needed
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode?.removeChild(link);
-    } catch (error: any) {
-      console.error(error);
-      alert(`Error downloading file: ${error.response?.data?.detail || error.message}`);
-    }
-  };
-
   return (
     <div>
-      <h2>Graph User Results</h2>
       <div>
-        <label>Username:</label>
-        <select
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        >
-          <option value="">Select a username</option>
-          {usernames.map((user) => (
-            <option key={user} value={user}>
-              {user}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <canvas ref={chartRef} />
+        <canvas
+         
+        ref={chartRef} />
       </div>
     </div>
   );
 };
 
-export default UserResultsGraph;
+export default Graph;

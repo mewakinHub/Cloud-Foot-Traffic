@@ -39,7 +39,7 @@ const ConfigTablePage = () => {
     setEditingRowIndex(null);
 
     try {
-      await api.put(`/update/update-config/${updatedData[index].username}`, editedData);
+      await api.put(`/update/config/${updatedData[index].username}`, editedData);
     } catch (error: any) {
       console.error('Error updating config data:', error);
     }
