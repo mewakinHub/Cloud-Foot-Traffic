@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from "react";
-import api from "../../utils/api"; // Adjust the path based on your project structure
+import api from "../../../utils/api"; // Adjust the path based on your project structure
 
 const ResultManagement: React.FC = () => {
   // State for /create/result form
