@@ -21,10 +21,6 @@ This repository contains configuration files and instructions to set up Jenkins 
 
 ### Setup Instructions
 
-local PC port: 3307
--L for local
-ssh -i bastion.pem -L 3307:des424-g09-db.couuhhmohu3z.us-east-1.rds.amazonaws.com:3306 ubuntu@54.81.57.229
-
 1. **Clone the Repository**:
 
     ```bash
@@ -72,7 +68,7 @@ ssh remote with TCP protocol (allow in EC2)
 
 ```bash
 ssh -i "bastionG9.pem" ec2-user@<BASTION_IP>
-ssh -i "bastionG9.pem" ubuntu@18.142.225.7
+ssh -i bastion.pem ubuntu@54.81.57.229
 
 scp -i "group9Key.pem" /path/on/bastion/file ec2-user@<JENKINS_SERVER_IP>:/path/on/jenkins-server/
 scp -i group9Key.pem group9Key.pem ubuntu@54.169.55.224:/ubuntu/home (from local terminal)
