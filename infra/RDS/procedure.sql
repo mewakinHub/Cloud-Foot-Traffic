@@ -32,4 +32,4 @@ BEGIN
     END LOOP;
     
     CLOSE user_cursor;
-EN
+END

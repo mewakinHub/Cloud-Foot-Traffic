@@ -67,36 +67,24 @@ Use the `bastionG9.pem` key file to connect to the bastion server. Replace `<BAS
 ssh remote with TCP protocol (allow in EC2)
 
 ```bash
-ssh -i "bastionG9.pem" ec2-user@<BASTION_IP>
-ssh -i bastion.pem ubuntu@54.81.57.229
-
-scp -i "group9Key.pem" /path/on/bastion/file ec2-user@<JENKINS_SERVER_IP>:/path/on/jenkins-server/
-scp -i group9Key.pem group9Key.pem ubuntu@54.169.55.224:/ubuntu/home (from local terminal)
-```
-
-#### 2. SSH into the Jenkins Server via Bastion
-
-Once on the bastion server, use the `group9Key.pem` key file to access the Jenkins server.
-
-```bash
-ssh -i "group9Key.pem" ec2-user@<JENKINS_SERVER_IP>
-ssh -i "group9Key.pem" ubuntu@10.0.138.34
+ssh -i "bastion.pem" ec2-user@<BASTION_IP>
+ssh -i bastion.pem ubuntu@13.213.77.92
 
 sudo docker pull mewakin/cloud-custom-jenkins
-sudo docker images
+sudo docker images ls
 # sudo docker run -d -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home --name jenkins-server mewakin/cloud-custom-jenkins:latest
-sudo docker start jenkins-server
-
-docker stop <container_name_or_id>
-docker rm <container_name_or_id>
-logout
-
 # Auto-Restart on Reboot
 sudo docker run -d --restart unless-stopped -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home --name jenkins-server mewakin/cloud-custom-jenkins:latest
 sudo docker start jenkins-server
 
 # get password
 sudo docker exec jenkins-server cat /var/jenkins_home/secrets/initialAdminPassword
+
+docker stop <container_name_or_id>
+docker rm <container_name_or_id>
+sudo docker start jenkins-server
+
+logout
 ```
 [website: http://<JENKINS_SERVER_IP>:8080](http://18.142.225.7:8080)
 get password: 716e784616324eefade98c9563bfb648
@@ -133,11 +121,3 @@ get password: 716e784616324eefade98c9563bfb648
    - Rotate SSH keys periodically and follow secure key management practices.
 
 ---
-
-### Security and Access Notes
-
-- **Avoid Sharing `.pem` Files**: Keep `bastionG9.pem` and `group9Key.pem` secure and do not share them. These keys grant access to critical infrastructure.
-- **Limit IAM Permissions**: Apply the principle of least privilege. Only provide Jenkins with the IAM permissions it absolutely needs.
-- **Rotate Keys Regularly**: To maintain security, regularly rotate SSH keys and AWS credentials.
-
-This setup allows secure access to Jenkins, configured for CI/CD pipelines within an AWS infrastructure.

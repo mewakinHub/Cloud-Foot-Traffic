@@ -21,8 +21,6 @@ CREATE TABLE Result (
 ) ENGINE=InnoDB AUTO_INCREMENT=209 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 ```
 
-
-
 NOTE: Single RDS has multiple schemas which contain the the procedure(pre-defined function), trigger(before any action such as delete or insert), table
 
 REPORT:
