@@ -20,10 +20,16 @@ Cloud-Foot-Traffic/
 │   └── Jenkinsfile             # CI/CD pipeline for both front-end and back-end
 ├── microservices/
 │   ├── model_inference/
-│   │   ├── Dockerfile
+│   │   ├── Dockerfile    # Builds the container
 │   │   ├── src/
 │   │   ├── requirements.txt
-│   │   └── Jenkinsfile         # CI/CD pipeline for Fargate deployment
+│   │   ├── tests/        # Add Robot Framework tests here
+│   │   │   ├── test_model_inference.robot
+│   │   │   ├── resources/
+│   │   │   │   └── keywords.robot
+│   │   │   └── variables/
+│   │   │       └── test_variables.robot
+│   │   └── Jenkinsfile   # CI/CD pipeline for building, testing, and pushing on ECR
 │   └── controller/
 │       ├── src/
 │       ├── requirements.txt

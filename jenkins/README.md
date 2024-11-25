@@ -56,11 +56,11 @@ This repository contains configuration files and instructions to set up Jenkins 
 
    Ensure AWS credentials or other sensitive information required for Jenkins jobs are securely set on the Jenkins server. You can do this through environment variables or the Jenkins credentials store.
 
-### Accessing Jenkins
+### Deploying in Jenkins's dedicated EC2
 
 Since Jenkins is deployed in a private subnet, you’ll need to use the bastion server to access it.
 
-#### 1. Connect to the Bastion Server
+#### Connect to the Bastion Server
 
 Use the `bastionG9.pem` key file to connect to the bastion server. Replace `<BASTION_IP>` with the IP address of the bastion server.
 
@@ -72,10 +72,10 @@ ssh -i bastion.pem ubuntu@13.213.77.92
 
 sudo docker pull mewakin/cloud-custom-jenkins
 sudo docker images ls
-# sudo docker run -d -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home --name jenkins-server mewakin/cloud-custom-jenkins:latest
+
 # Auto-Restart on Reboot
 sudo docker run -d --restart unless-stopped -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home --name jenkins-server mewakin/cloud-custom-jenkins:latest
-sudo docker start jenkins-server
+# sudo docker run -d -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home --name jenkins-server mewakin/cloud-custom-jenkins:latest
 
 # get password
 sudo docker exec jenkins-server cat /var/jenkins_home/secrets/initialAdminPassword
@@ -86,38 +86,77 @@ sudo docker start jenkins-server
 
 logout
 ```
-[website: http://<JENKINS_SERVER_IP>:8080](http://18.142.225.7:8080)
-get password: 716e784616324eefade98c9563bfb648
+- Open a browser and go to [website: http://<JENKINS_SERVER_IP>:8080](http://13.213.77.92:8080)
+get password: 73f83a28a23c4379857265e3e7d4648a
 
-<!-- #### 3. Access Jenkins Web Interface
+#### set-up UI-based browser Jenkins Wizard
 
-- After successfully connecting to the Jenkins server, you can forward the Jenkins port to your local machine to access the web interface:
-  
-  ```bash
-  ssh -i "group9Key.pem" -L 8080:localhost:8080 ec2-user@<JENKINS_SERVER_IP>
-  ssh -i "group9Key.pem" -L 8080:localhost:8080 ubuntu@10.0.138.34
-  ``` -->
+username: admin
+password: admin
 
-- Open a browser and go to `http://localhost:8080` to access Jenkins.
+docker restart <CONTAINER_NAME_OR_ID>
+sudo apt install -y openjdk-11-jdk
 
-### Configuration and CI/CD Best Practices
+1. **Add a `tests/` Directory**:
+   - Place the Robot Framework test cases in a dedicated `tests/` folder within each microservice directory (e.g., `microservices/model_inference/tests/`).
+   - Structure the tests using a modular approach:
+     - `test_model_inference.robot`: Main test suite for `model_inference`.
+     - `resources/`: Shared keywords for reusability across test cases.
+     - `variables/`: Reusable variables for maintaining test configuration.
 
-1. **Store Jenkinsfile in Source Control without Credentials**:
-   - Keep the `Jenkinsfile` in your Git repository, but avoid hardcoding credentials.
-   - Use Jenkins environment variables or the credentials store to handle sensitive information securely.
+2. **Update the `Jenkinsfile` in `model_inference`**:
+   Modify the CI/CD pipeline to include a testing stage for Robot Framework. Example:
+   ```groovy
+   pipeline {
+       agent any
+       stages {
+           stage('Build Docker Image') {
+               steps {
+                   sh 'docker build -t model_inference .'
+               }
+           }
+           stage('Run Tests') {
+               steps {
+                   sh 'docker run --rm -v $(pwd)/output:/tests/output model_inference robot --outputdir /tests/output tests/'
+               }
+           }
+           stage('Push to ECR') {
+               steps {
+                   sh '''
+                   $(aws ecr get-login --no-include-email --region us-east-1)
+                   docker tag model_inference:latest <your-ecr-repo>:latest
+                   docker push <your-ecr-repo>:latest
+                   '''
+               }
+           }
+       }
+   }
+   ```
 
-2. **Role-Based Access Control (RBAC)**:
-   - Use Jenkins’s RBAC feature to restrict access to specific users or roles based on permissions.
-
-3. **Set Up IAM Role for Jenkins**:
-   - Create an IAM role for the Jenkins server to grant it access to AWS resources (e.g., ECR, ECS, Lambda) without embedding credentials in the codebase.
-   - Attach policies for accessing only necessary resources (e.g., `AmazonEC2ContainerRegistryFullAccess`, `AmazonECSFullAccess`, `AWSLambdaExecute`).
-
-4. **Use JCasC for Initial Configuration (Optional)**:
-   - Use Jenkins Configuration as Code (JCasC) to define initial setup configurations for Jenkins, which can include plugins and credentials.
-
-5. **Secure Jenkins Access with Bastion and SSH Keys**:
-   - The Jenkins server is isolated in a private subnet for security. Always connect through the bastion host using the provided `.pem` keys.
-   - Rotate SSH keys periodically and follow secure key management practices.
+3. **Integrate Robot Framework into Docker**:
+   - Update the `Dockerfile` in `model_inference` to include Robot Framework and dependencies:
+     ```dockerfile
+     FROM python:3.9-slim
+     RUN apt-get update && apt-get install -y curl xvfb firefox-esr && rm -rf /var/lib/apt/lists/*
+     RUN pip install --no-cache-dir robotframework robotframework-seleniumlibrary selenium
+     WORKDIR /tests
+     COPY . /tests
+     ENTRYPOINT ["robot", "--outputdir", "/tests/output"]
+     ```
 
 ---
+
+##### Workflow for Robot Framework Integration:
+1. **Development**:
+   - Write and test your Robot Framework scripts locally within `tests/`.
+   - Use `resources/` and `variables/` directories for reusable components.
+
+2. **Testing in CI/CD**:
+   - During the Jenkins pipeline execution:
+     1. Build the `model_inference` Docker image.
+     2. Run the Robot Framework tests in a containerized environment.
+     3. Generate test reports in the `output/` directory.
+
+3. **Deployment**:
+   - If tests pass, push the Docker image to ECR.
+   - ECS tasks automatically pull the updated image and deploy the new service.
