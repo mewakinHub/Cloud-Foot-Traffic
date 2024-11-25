@@ -10,7 +10,7 @@ class ConfigUpdateModel(BaseModel):
     streaming_URL: str
     email: str | None = None
 
-@router.put("/update-config/{username}", response_model=ConfigUpdateModel)
+@router.put("/config/{username}", response_model=ConfigUpdateModel)
 def update_config(
     username: str, 
     update_data: ConfigUpdateModel, 
@@ -22,7 +22,7 @@ def update_config(
         raise HTTPException(status_code=404, detail="User not found")
 
     # Update the fields dynamically
-    for field, value in update_data.dict(exclude_unset=True).items():
+    for field, value in update_data.model_dump(exclude_unset=True).items():
         setattr(user, field, value)
     
     # Commit and refresh

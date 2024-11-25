@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Chart, { ChartConfiguration } from 'chart.js/auto';
-import api from "../../utils/api";
+import api from "../../../utils/api";
 
 const UserResultsGraph: React.FC = () => {
   const chartRef = useRef<HTMLCanvasElement | null>(null);
@@ -118,11 +118,6 @@ const UserResultsGraph: React.FC = () => {
       <div>
         <canvas ref={chartRef} />
       </div>
-      {username && (
-        <div>
-          <button onClick={handleDownload}>Download Data for {username}</button>
-        </div>
-      )}
     </div>
   );
 };
