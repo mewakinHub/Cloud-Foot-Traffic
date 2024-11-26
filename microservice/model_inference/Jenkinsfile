@@ -6,8 +6,6 @@ pipeline {
         ECR_REPO_URI = '891376919848.dkr.ecr.ap-southeast-1.amazonaws.com/youtube-detection-app'
         DOCKERHUB_REPO = 'pansaar1553/youtube-detection-app'
         DOCKERHUB_CREDENTIALS = credentials('911be91f-9bee-4fab-9944-749709f26585')
-        // DOCKERHUB_USERNAME = credentials('911be91f-9bee-4fab-9944-749709f26585').username
-        // DOCKERHUB_PASSWORD = credentials('911be91f-9bee-4fab-9944-749709f26585').password
     }
 
     stages {
@@ -16,64 +14,57 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/mewakinHub/Cloud-Foot-Traffic.git'
             }
         }
-        
-        // stage('Install AWS CLI') {
-        //     steps {
-        //         script {
-        //             sh """
-        //             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-        //             unzip awscliv2.zip
-        //             sudo ./aws/install
-        //             aws --version
-        //             """
-        //         }
-        //     }
-        // }
+
+        stage('Install AWS CLI') {
+            steps {
+                script {
+                    sh '''
+                    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+                    unzip awscliv2.zip
+                    sudo ./aws/install
+                    aws --version
+                    '''
+                }
+            }
+        }
 
         stage('Debug Workspace') {
             steps {
-                sh 'ls -la microservices/model_inference'
+                script {
+                    // Check if the directory exists before listing files
+                    sh '''
+                    if [ -d "microservices/model_inference" ]; then
+                        ls -la microservices/model_inference
+                    else
+                        echo "Directory microservices/model_inference does not exist."
+                        exit 1
+                    fi
+                    '''
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    dir('microservice/model_inference') {
-                        // Login to DockerHub
-                        sh """
+                    dir('microservices/model_inference') {
+                        sh '''
                         echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin
                         docker build -t ${DOCKERHUB_REPO}:latest .
-                        """
+                        '''
                     }
                 }
             }
         }
 
-        // stage('Test Docker Image') {
-        //     steps {
-        //         script {
-        //             dir('microservices/model_inference') {
-        //                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-        //                     // Run tests inside the container but don't fail the pipeline if tests fail
-        //                     sh '''
-        //                     docker run --rm ${DOCKERHUB_REPO}:latest robot --outputdir /app/output /app/tests || true
-        //                     echo "Skipping tests, build continues..."
-        //                     '''
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-
         stage('Push to ECR') {
             steps {
                 script {
-                    sh """
+                    sh '''
                     aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO_URI}
                     docker tag ${DOCKERHUB_REPO}:latest ${ECR_REPO_URI}:latest
                     docker push ${ECR_REPO_URI}:latest
-                    """
+                    '''
                 }
             }
         }
@@ -81,10 +72,10 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    sh """
-                    echo ${DOCKERHUB_PASSWORD} | docker login -u ${DOCKERHUB_USERNAME} --password-stdin
+                    sh '''
+                    echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin
                     docker push ${DOCKERHUB_REPO}:latest
-                    """
+                    '''
                 }
             }
         }
@@ -93,8 +84,8 @@ pipeline {
     post {
         always {
             echo 'Cleaning up Docker images...'
-            sh "docker rmi ${DOCKERHUB_REPO}:${IMAGE_TAG} || true"
-            sh "docker rmi ${ECR_REPO_URI}:${IMAGE_TAG} || true"
+            sh "docker rmi ${DOCKERHUB_REPO}:latest || true"
+            sh "docker rmi ${ECR_REPO_URI}:latest || true"
         }
         failure {
             echo "Build failed. Please check logs for details."
