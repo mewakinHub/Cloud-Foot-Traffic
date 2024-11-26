@@ -17,17 +17,19 @@ pipeline {
 
         stage('Debug Workspace') {
             steps {
-                script {
-                    sh 'ls -la ${WORKSPACE}/microservices/model_inference'
-                }
+                sh 'ls -la microservices/model_inference'
             }
         }
-
+        
         stage('Build Docker Image') {
             steps {
                 script {
                     dir('microservices/model_inference') {
-                        sh "docker build -f Dockerfile -t ${DOCKERHUB_REPO}:latest ."
+                        // Login to DockerHub
+                        sh """
+                        echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin
+                        docker build -t ${DOCKERHUB_REPO}:latest .
+                        """
                     }
                 }
             }
@@ -37,6 +39,7 @@ pipeline {
             steps {
                 script {
                     dir('microservices/model_inference') {
+                        // Run the Robot Framework tests inside the container
                         sh '''
                         docker run --rm ${DOCKERHUB_REPO}:latest \
                             robot --outputdir /app/output /app/tests
