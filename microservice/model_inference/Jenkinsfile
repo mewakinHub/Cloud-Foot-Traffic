@@ -20,11 +20,11 @@ pipeline {
                 sh 'ls -la microservices/model_inference'
             }
         }
-        
+
         stage('Build Docker Image') {
             steps {
                 script {
-                    dir('microservices/model_inference') {
+                    dir('microservice/model_inference') {
                         // Login to DockerHub
                         sh """
                         echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin
