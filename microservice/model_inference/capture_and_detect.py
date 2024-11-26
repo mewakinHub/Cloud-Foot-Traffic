@@ -45,7 +45,7 @@ def detect_people(frame):
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
     return frame, len(boxes)
 
-# Function to capture the best frame
+# Function to capture the best frame designed by Mewakin
 def capture_best_frame(youtube_url, capture_duration, quality_threshold, max_attempts=5, retry_interval=5):
     best_frame = None
     best_quality = 0
@@ -182,9 +182,8 @@ def sanitize_config(config_data):
     }
     return sanitized_config
 
-
 def process_user(user):
-    streaming_url = user["streaming_URL"]
+    streaming_url = user["streaming_URL"] 
     email = user["email"]
     username = user["username"]
     monitoring_status = user["Monitoring_status"]
