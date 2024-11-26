@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.1.1 (Python 3.12.4 on win32)" generated="2024-11-26T18:21:01.279373" rpa="false" schemaversion="5">
+<suite id="s1" name="Verify Functionality" source="C:\Users\mew\Documents\github\Cloud-Foot-Traffic\microservice\model_inference\tests\verify_functionality.robot">
+<test id="s1-t1" name="Test Get Stream URL" line="42">
+<kw name="Run Process" owner="Process">
+<msg time="2024-11-26T18:21:01.330953" level="INFO">Starting process:
+python3 capture_and_detect.py</msg>
+<msg time="2024-11-26T18:21:01.359437" level="INFO">Waiting for process to complete.</msg>
+<msg time="2024-11-26T18:21:01.402282" level="INFO">Process completed.</msg>
+<msg time="2024-11-26T18:21:01.402282" level="INFO">${result} = &lt;result object with rc 9009&gt;</msg>
+<var>${result}</var>
+<arg>python3</arg>
+<arg>${SCRIPT_PATH}</arg>
+<arg>env:PAYLOAD=${PAYLOAD}</arg>
+<arg>stderr=STDOUT</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<status status="PASS" start="2024-11-26T18:21:01.329950" elapsed="0.072332"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2024-11-26T18:21:01.402790" level="INFO">Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings &gt; Manage App Execution Aliases.</msg>
+<arg>${result.stdout}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2024-11-26T18:21:01.402790" elapsed="0.000000"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<msg time="2024-11-26T18:21:01.403797" level="FAIL">'Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings &gt; Manage App Execution Aliases.' does not contain 'Successfully retrieved stream URL'</msg>
+<arg>${result.stdout}</arg>
+<arg>Successfully retrieved stream URL</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="FAIL" start="2024-11-26T18:21:01.403797" elapsed="0.000000">'Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings &gt; Manage App Execution Aliases.' does not contain 'Successfully retrieved stream URL'</status>
+</kw>
+<doc>Test the retrieval of stream URL using yt-dlp.</doc>
+<status status="FAIL" start="2024-11-26T18:21:01.328947" elapsed="0.075852">'Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings &gt; Manage App Execution Aliases.' does not contain 'Successfully retrieved stream URL'</status>
+</test>
+<test id="s1-t2" name="Test Frame Capture" line="48">
+<kw name="Run Process" owner="Process">
+<msg time="2024-11-26T18:21:01.405799" level="INFO">Starting process:
+python3 capture_and_detect.py</msg>
+<msg time="2024-11-26T18:21:01.425353" level="INFO">Waiting for process to complete.</msg>
+<msg time="2024-11-26T18:21:01.466871" level="INFO">Process completed.</msg>
+<msg time="2024-11-26T18:21:01.466871" level="INFO">${result} = &lt;result object with rc 9009&gt;</msg>
+<var>${result}</var>
+<arg>python3</arg>
+<arg>${SCRIPT_PATH}</arg>
+<arg>env:PAYLOAD=${PAYLOAD}</arg>
+<arg>stderr=STDOUT</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<status status="PASS" start="2024-11-26T18:21:01.405799" elapsed="0.061072"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2024-11-26T18:21:01.467875" level="INFO">Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings &gt; Manage App Execution Aliases.</msg>
+<arg>${result.stdout}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2024-11-26T18:21:01.467875" elapsed="0.000000"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2024-11-26T18:21:01.468872" level="INFO"/>
+<arg>${result.stderr}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2024-11-26T18:21:01.467875" elapsed="0.000997"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<msg time="2024-11-26T18:21:01.469871" level="FAIL">'Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings &gt; Manage App Execution Aliases.' does not contain 'People Count:'</msg>
+<arg>${result.stdout}</arg>
+<arg>People Count:</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="FAIL" start="2024-11-26T18:21:01.468872" elapsed="0.000999">'Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings &gt; Manage App Execution Aliases.' does not contain 'People Count:'</status>
+</kw>
+<doc>Test capturing and processing frames.</doc>
+<status status="FAIL" start="2024-11-26T18:21:01.404799" elapsed="0.065072">'Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings &gt; Manage App Execution Aliases.' does not contain 'People Count:'</status>
+</test>
+<test id="s1-t3" name="Test Database Insertion" line="55">
+<kw name="Run Process" owner="Process">
+<msg time="2024-11-26T18:21:01.471385" level="INFO">Starting process:
+python3 capture_and_detect.py</msg>
+<msg time="2024-11-26T18:21:01.490915" level="INFO">Waiting for process to complete.</msg>
+<msg time="2024-11-26T18:21:01.533284" level="INFO">Process completed.</msg>
+<msg time="2024-11-26T18:21:01.533284" level="INFO">${result} = &lt;result object with rc 9009&gt;</msg>
+<var>${result}</var>
+<arg>python3</arg>
+<arg>${SCRIPT_PATH}</arg>
+<arg>env:PAYLOAD=${PAYLOAD}</arg>
+<arg>stderr=STDOUT</arg>
+<doc>Runs a process and waits for it to complete.</doc>
+<status status="PASS" start="2024-11-26T18:21:01.470873" elapsed="0.062411"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2024-11-26T18:21:01.534283" level="INFO">Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings &gt; Manage App Execution Aliases.</msg>
+<arg>${result.stdout}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2024-11-26T18:21:01.533284" elapsed="0.000999"/>
+</kw>
+<kw name="Log" owner="BuiltIn">
+<msg time="2024-11-26T18:21:01.535282" level="INFO"/>
+<arg>${result.stderr}</arg>
+<doc>Logs the given message with the given level.</doc>
+<status status="PASS" start="2024-11-26T18:21:01.534283" elapsed="0.000999"/>
+</kw>
+<kw name="Should Not Contain" owner="BuiltIn">
+<arg>${result.stdout}</arg>
+<arg>[ERROR]</arg>
+<doc>Fails if ``container`` contains ``item`` one or more times.</doc>
+<status status="PASS" start="2024-11-26T18:21:01.535282" elapsed="0.000000"/>
+</kw>
+<kw name="Should Contain" owner="BuiltIn">
+<msg time="2024-11-26T18:21:01.536281" level="FAIL">'Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings &gt; Manage App Execution Aliases.' does not contain 'Successfully inserted data into Result table'</msg>
+<arg>${result.stdout}</arg>
+<arg>Successfully inserted data into Result table</arg>
+<doc>Fails if ``container`` does not contain ``item`` one or more times.</doc>
+<status status="FAIL" start="2024-11-26T18:21:01.535282" elapsed="0.000999">'Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings &gt; Manage App Execution Aliases.' does not contain 'Successfully inserted data into Result table'</status>
+</kw>
+<doc>Ensure that results are inserted into the database correctly.</doc>
+<status status="FAIL" start="2024-11-26T18:21:01.469871" elapsed="0.066410">'Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings &gt; Manage App Execution Aliases.' does not contain 'Successfully inserted data into Result table'</status>
+</test>
+<status status="FAIL" start="2024-11-26T18:21:01.279373" elapsed="0.257910"/>
+</suite>
+<statistics>
+<total>
+<stat pass="0" fail="3" skip="0">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat pass="0" fail="3" skip="0" id="s1" name="Verify Functionality">Verify Functionality</stat>
+</suite>
+</statistics>
+<errors>
+<msg time="2024-11-26T18:21:01.275375" level="WARN">Error in file 'C:\Users\mew\Documents\github\Cloud-Foot-Traffic\microservice\model_inference\tests\verify_functionality.robot' on line 67: The '[Return]' setting is deprecated. Use the 'RETURN' statement instead.</msg>
+</errors>
+</robot>
