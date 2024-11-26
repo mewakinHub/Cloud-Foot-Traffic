@@ -58,10 +58,9 @@ ssh -i bastion.pem ubuntu@13.215.174.242
 
 sudo docker pull mewakin/cloud-custom-jenkins
 sudo docker images ls
+sudo docker images
 
 # Auto-Restart on Reboot
-# sudo docker run -d --restart unless-stopped -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home --name jenkins-server mewakin/cloud-custom-jenkins:latest
-
 docker run -d \
   --name jenkins-server \
   -p 8080:8080 -p 50000:50000 \
@@ -72,11 +71,21 @@ docker run -d \
 # get password
 sudo docker exec jenkins-server cat /var/jenkins_home/secrets/initialAdminPassword
 
+docker exec -u root -it jenkins-server bash
+chown root:docker /var/run/docker.sock
+chmod 660 /var/run/docker.sock
+exit
+
+sudo docker restart jenkins-server
+
+docker exec -it jenkins-server bash
+groups
+docker ps
+ls -la /var/run/docker.sock
+
 docker stop jenkins-server
 docker rm jenkins-server
 sudo docker start jenkins-server
-
-sudo docker restart jenkins-server
 
 logout
 ```
