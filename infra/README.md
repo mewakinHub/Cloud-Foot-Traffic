@@ -1,6 +1,6 @@
 ### How to Remote
 ```
-ssh -i bastion.pem -L 3307:des424-g09-rds.cpqayo04ersh.ap-southeast-1.rds.amazonaws.com:3306 ubuntu@13.213.77.92
+ssh -i bastion.pem -L 3307:des424-g09-rds.cpqayo04ersh.ap-southeast-1.rds.amazonaws.com:3306 ubuntu@13.215.174.242
 ```
 NOTE:
 local PC port: 3307
@@ -23,5 +23,5 @@ PASSWORD: group9login
 
 
 ### S3
-we do not have the life-cycle
+we do not have the life-cycle anymore due to 3rd times migration and lack of time and resource(personal account and tem budget)
 

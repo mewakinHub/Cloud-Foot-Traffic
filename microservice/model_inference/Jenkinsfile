@@ -14,20 +14,11 @@ pipeline {
             }
         }
 
-        stage('Install Docker') {
-            steps {
-                sh '''
-                sudo apt-get update
-                sudo apt-get install -y docker.io
-                '''
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 script {
                     dir('microservices/model_inference') {
-                        sh "docker build -t ${DOCKERHUB_REPO}:latest ."
+                        sh 'docker build -t ${DOCKERHUB_REPO}:latest .'
                     }
                 }
             }
@@ -37,6 +28,7 @@ pipeline {
             steps {
                 script {
                     dir('microservices/model_inference') {
+                        // Run the Robot Framework tests inside the Docker container
                         sh '''
                         docker run --rm ${DOCKERHUB_REPO}:latest \
                             robot --outputdir /app/output /app/tests

@@ -4,7 +4,7 @@ This repository contains configuration files and instructions to set up Jenkins 
 
 ## Website & Password [Group Project]
 
-- **website**: http://18.142.225.7:8080
+- **website**: http://13.215.174.242:8080/
 - **password**: 716e784616324eefade98c9563bfb648
 
 ## Table of Contents
@@ -68,7 +68,7 @@ ssh remote with TCP protocol (allow in EC2)
 
 ```bash
 ssh -i "bastion.pem" ec2-user@<BASTION_IP>
-ssh -i bastion.pem ubuntu@13.213.77.92
+ssh -i bastion.pem ubuntu@13.215.174.242
 
 sudo docker pull mewakin/cloud-custom-jenkins
 sudo docker images ls
@@ -84,9 +84,11 @@ docker stop <container_name_or_id>
 docker rm <container_name_or_id>
 sudo docker start jenkins-server
 
+sudo docker restart jenkins-server
+
 logout
 ```
-- Open a browser and go to [website: http://<JENKINS_SERVER_IP>:8080](http://13.213.77.92:8080)
+- Open a browser and go to [website: http://<JENKINS_SERVER_IP>:8080](http://13.215.174.242:8080)
 get password: 73f83a28a23c4379857265e3e7d4648a
 
 #### set-up UI-based browser Jenkins Wizard
