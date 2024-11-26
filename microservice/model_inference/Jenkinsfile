@@ -29,9 +29,9 @@ pipeline {
                 script {
                     sh """
                     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-                    unzip -o awscliv2.zip > /dev/null # Overwrite without prompting
-                    sudo ./aws/install || true
-                    aws --version || echo "AWS CLI installation failed. Please check!"
+                    unzip -o awscliv2.zip # Add the '-o' flag to overwrite existing files automatically
+                    sudo ./aws/install
+                    aws --version
                     """
                 }
             }
