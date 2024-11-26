@@ -28,9 +28,13 @@ pipeline {
             steps {
                 script {
                     sh """
-                    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-                    unzip -o awscliv2.zip # Add the '-o' flag to overwrite existing files automatically
-                    sudo ./aws/install
+                    # Remove existing AWS CLI if any
+                    rm -rf /usr/local/aws-cli || true
+                    
+                    # Install AWS CLI using Snap
+                    snap install aws-cli --classic
+                    
+                    # Verify installation
                     aws --version
                     """
                 }
