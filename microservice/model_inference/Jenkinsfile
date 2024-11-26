@@ -43,15 +43,30 @@ pipeline {
             }
         }
 
+        stage('Verify AWS CLI') {
+            steps {
+                sh '''
+                echo $PATH
+                aws --version || { echo "AWS CLI is not available"; exit 1; }
+                '''
+            }
+        }
+
         stage('Push to ECR') {
             steps {
                 script {
-                    sh '''
-                    export PATH=$PATH:/usr/local/bin
-                    aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO_URI}
-                    docker tag ${DOCKERHUB_REPO}:latest ${ECR_REPO_URI}:latest
-                    docker push ${ECR_REPO_URI}:latest
-                    '''
+                    dir('microservice/model_inference') {
+                        sh '''
+                        echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin
+                        docker run --rm \
+                            -v ~/.aws:/root/.aws \
+                            ${DOCKERHUB_REPO}:latest \
+                            aws ecr get-login-password --region ${AWS_REGION} | \
+                            docker login --username AWS --password-stdin ${ECR_REPO_URI}
+                        docker tag ${DOCKERHUB_REPO}:latest ${ECR_REPO_URI}:latest
+                        docker push ${ECR_REPO_URI}:latest
+                        '''
+                    }
                 }
             }
         }
