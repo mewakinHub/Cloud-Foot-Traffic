@@ -33,10 +33,10 @@ pipeline {
                 script {
                     // Check if the directory exists before listing files
                     sh '''
-                    if [ -d "microservices/model_inference" ]; then
-                        ls -la microservices/model_inference
+                    if [ -d "microservice/model_inference" ]; then
+                        ls -la microservice/model_inference
                     else
-                        echo "Directory microservices/model_inference does not exist."
+                        echo "Directory microservice/model_inference does not exist."
                         exit 1
                     fi
                     '''
@@ -47,7 +47,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    dir('microservices/model_inference') {
+                    dir('microservice/model_inference') {
                         sh '''
                         echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin
                         docker build -t ${DOCKERHUB_REPO}:latest .
