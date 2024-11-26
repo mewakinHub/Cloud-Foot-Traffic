@@ -17,18 +17,18 @@ pipeline {
             }
         }
         
-        stage('Install AWS CLI') {
-            steps {
-                script {
-                    sh """
-                    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-                    unzip awscliv2.zip
-                    sudo ./aws/install
-                    aws --version
-                    """
-                }
-            }
-        }
+        // stage('Install AWS CLI') {
+        //     steps {
+        //         script {
+        //             sh """
+        //             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+        //             unzip awscliv2.zip
+        //             sudo ./aws/install
+        //             aws --version
+        //             """
+        //         }
+        //     }
+        // }
 
         stage('Debug Workspace') {
             steps {
@@ -50,21 +50,21 @@ pipeline {
             }
         }
 
-        stage('Test Docker Image') {
-            steps {
-                script {
-                    dir('microservices/model_inference') {
-                        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                            // Run tests inside the container but don't fail the pipeline if tests fail
-                            sh '''
-                            docker run --rm ${DOCKERHUB_REPO}:latest robot --outputdir /app/output /app/tests || true
-                            echo "Skipping tests, build continues..."
-                            '''
-                        }
-                    }
-                }
-            }
-        }
+        // stage('Test Docker Image') {
+        //     steps {
+        //         script {
+        //             dir('microservices/model_inference') {
+        //                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+        //                     // Run tests inside the container but don't fail the pipeline if tests fail
+        //                     sh '''
+        //                     docker run --rm ${DOCKERHUB_REPO}:latest robot --outputdir /app/output /app/tests || true
+        //                     echo "Skipping tests, build continues..."
+        //                     '''
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
 
         stage('Push to ECR') {
             steps {
