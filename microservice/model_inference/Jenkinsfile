@@ -5,9 +5,9 @@ pipeline {
         AWS_REGION = 'ap-southeast-1'
         ECR_REPO_URI = '891376919848.dkr.ecr.ap-southeast-1.amazonaws.com/youtube-detection-app'
         DOCKERHUB_REPO = 'pansaar1553/youtube-detection-app'
-        // DOCKERHUB_CREDENTIALS = credentials('911be91f-9bee-4fab-9944-749709f26585')
-        DOCKERHUB_USERNAME = credentials('911be91f-9bee-4fab-9944-749709f26585').username
-        DOCKERHUB_PASSWORD = credentials('911be91f-9bee-4fab-9944-749709f26585').password
+        DOCKERHUB_CREDENTIALS = credentials('911be91f-9bee-4fab-9944-749709f26585')
+        // DOCKERHUB_USERNAME = credentials('911be91f-9bee-4fab-9944-749709f26585').username
+        // DOCKERHUB_PASSWORD = credentials('911be91f-9bee-4fab-9944-749709f26585').password
     }
 
     stages {
