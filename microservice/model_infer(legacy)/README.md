@@ -47,7 +47,7 @@ pip install ffmpeg yt-dlp opencv-python-headless
 python capture_and_detect.py
 
 
-### Explanation of Key Parts:V
+### Explanation of Key Parts:
 1. Frame Capture Over 45 Seconds: Instead of a single capture, we are capturing frames continuously and selecting the best one based on quality.
    - Stream URL Retrieval with yt-dlp: The script now retrieves the actual stream URL using yt-dlp, which should be more reliable for YouTube live videos.
    - Continuous Frame Capture: The script captures frames from the YouTube stream for 45 seconds.

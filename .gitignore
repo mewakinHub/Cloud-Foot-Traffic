@@ -7,5 +7,5 @@ AI-Server/outputs/detection_image/
 
 # for Web-Dev
 
-@Thyme
-
+**/node_modules/
+**/.next/
