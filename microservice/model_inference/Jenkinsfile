@@ -50,7 +50,7 @@ pipeline {
             }
         }
 
-        stage('Test Front-End with Robot Framework') {
+        stage('Test Docker Image') {
             steps {
                 script {
                     dir('microservices/model_inference') {
@@ -58,6 +58,7 @@ pipeline {
                             // Run tests inside the container but don't fail the pipeline if tests fail
                             sh '''
                             docker run --rm ${DOCKERHUB_REPO}:latest robot --outputdir /app/output /app/tests || true
+                            echo "Skipping tests, build continues..."
                             '''
                         }
                     }
