@@ -50,7 +50,7 @@ pipeline {
             }
         }
 
-        stage('Test Docker Image') {
+        stage('Test Front-End with Robot Framework') {
             steps {
                 script {
                     dir('microservices/model_inference') {
@@ -92,8 +92,14 @@ pipeline {
     post {
         always {
             echo 'Cleaning up Docker images...'
-            sh "docker rmi ${DOCKERHUB_REPO}:latest || true"
-            sh "docker rmi ${ECR_REPO_URI}:latest || true"
+            sh "docker rmi ${DOCKERHUB_REPO}:${IMAGE_TAG} || true"
+            sh "docker rmi ${ECR_REPO_URI}:${IMAGE_TAG} || true"
+        }
+        failure {
+            echo "Build failed. Please check logs for details."
+        }
+        success {
+            echo "Build succeeded and images are pushed successfully."
         }
     }
 }
