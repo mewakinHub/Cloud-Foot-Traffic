@@ -15,38 +15,6 @@ pipeline {
             }
         }
 
-        // stage('Setup Environment') {
-        //     steps {
-        //         sh """
-        //         apt-get update
-        //         apt-get install -y curl unzip
-        //         """
-        //     }
-        // }
-
-        // stage('Install AWS CLI') {
-        //     steps {
-        //         script {
-        //             sh """
-        //             # Remove any existing AWS CLI installations
-        //             rm -rf /usr/local/aws-cli
-                    
-        //             # Download the AWS CLI v2 installer
-        //             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-                    
-        //             # Unzip the installer
-        //             unzip -o awscliv2.zip
-                    
-        //             # Run the install script without requiring 'sudo'
-        //             ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
-                    
-        //             # Check if AWS CLI is installed correctly
-        //             aws --version
-        //             """
-        //         }
-        //     }
-        // }
-
         stage('Debug Workspace') {
             steps {
                 script {
@@ -56,7 +24,6 @@ pipeline {
                         ls -la microservice/model_inference
                     else
                         echo "Directory microservice/model_inference does not exist."
-                        exit 1
                     fi
                     '''
                 }
@@ -69,7 +36,8 @@ pipeline {
                     dir('microservice/model_inference') {
                         sh '''
                         echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin
-                        docker build -t ${DOCKERHUB_REPO}:latest .
+                        docker buildx create --use || true
+                        docker buildx build --platform linux/amd64 -t ${DOCKERHUB_REPO}:latest --load .
                         '''
                     }
                 }
@@ -80,6 +48,7 @@ pipeline {
             steps {
                 script {
                     sh '''
+                    export PATH=$PATH:/usr/local/bin
                     aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO_URI}
                     docker tag ${DOCKERHUB_REPO}:latest ${ECR_REPO_URI}:latest
                     docker push ${ECR_REPO_URI}:latest
