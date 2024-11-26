@@ -15,14 +15,14 @@ pipeline {
             }
         }
 
-        stage('Setup Environment') {
-            steps {
-                sh """
-                apt-get update
-                apt-get install -y curl unzip
-                """
-            }
-        }
+        // stage('Setup Environment') {
+        //     steps {
+        //         sh """
+        //         apt-get update
+        //         apt-get install -y curl unzip
+        //         """
+        //     }
+        // }
 
         stage('Install AWS CLI') {
             steps {
