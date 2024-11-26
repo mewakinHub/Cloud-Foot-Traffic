@@ -74,7 +74,7 @@ pipeline {
         }
     }
 
-    // comments
+    // POST section is used to define the clean up steps
     post {
         always {
             echo 'Cleaning up Docker images...'
