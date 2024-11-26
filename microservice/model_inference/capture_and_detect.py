@@ -7,6 +7,7 @@ import subprocess
 import time
 import numpy as np
 import yt_dlp
+import pymysql
 
 # Function to retrieve YouTube stream URL using yt-dlp
 def get_stream_url(youtube_url):
@@ -110,17 +111,98 @@ def image_to_base64(image):
     _, buffer = cv2.imencode('.jpg', image)
     return base64.b64encode(buffer).decode("utf-8")
 
-# Main user processing function
+# RDS connection details
+RDS_HOST = "des424-g09-rds.cpqayo04ersh.ap-southeast-1.rds.amazonaws.com"
+DB_USERNAME = "admin"
+DB_PASSWORD = "group9login"
+DB_NAME = "CCTV_service"
+
+def insert_result_into_database(result):
+    """
+    Inserts data into the Result table.
+    Handles both success and error cases.
+    """
+    try:
+        # Connect to the RDS database
+        connection = pymysql.connect(
+            host=RDS_HOST,
+            user=DB_USERNAME,
+            password=DB_PASSWORD,
+            database=DB_NAME,
+            connect_timeout=5
+        )
+        with connection.cursor() as cursor:
+            if "result" in result and isinstance(result["result"], int):
+                # Insert successful result
+                sql_query = """
+                    INSERT INTO Result (username, DATE_TIME, config, result, processed_detection_image) 
+                    VALUES (%s, %s, %s, %s, %s)
+                """
+                cursor.execute(
+                    sql_query,
+                    (
+                        result["username"],
+                        result["DATE_TIME"],
+                        result["config"],
+                        result["result"],  # This is the detected people count as an integer
+                        result["processed_detection_image"]
+                    )
+                )
+            else:
+                # Insert failed result
+                sql_query = """
+                    INSERT INTO Result (username, DATE_TIME, config, error_message) 
+                    VALUES (%s, %s, %s, %s)
+                """
+                cursor.execute(
+                    sql_query,
+                    (
+                        result["username"],
+                        result["DATE_TIME"],
+                        result["config"],
+                        result["error"]
+                    )
+                )
+            # Commit transaction
+            connection.commit()
+            print("[INFO] Successfully inserted data into Result table.")
+    except Exception as e:
+        print(f"[ERROR] Failed to insert data into database: {e}")
+    finally:
+        if connection:
+            connection.close()
+
+def sanitize_config(config_data):
+    """
+    Removes backslashes and forward slashes from the config values.
+    """
+    sanitized_config = {
+        key: str(value).replace("\\", "").replace("/", "")
+        for key, value in config_data.items()
+    }
+    return sanitized_config
+
+
 def process_user(user):
     streaming_url = user["streaming_URL"]
     email = user["email"]
     username = user["username"]
+    monitoring_status = user["Monitoring_status"]
 
     print(f"Processing user: {username} with stream URL: {streaming_url}")
 
     capture_duration = 45
     quality_threshold = 300
     date_time = datetime.now().isoformat()
+
+    # Create the config JSON string
+    raw_config = {
+        "Monitoring_status": monitoring_status,
+        "streaming_URL": streaming_url,
+        "email": email
+    }
+    sanitized_config = sanitize_config(raw_config)
+    config_json = json.dumps(sanitized_config)
 
     success, best_frame, best_quality = capture_best_frame(streaming_url, capture_duration, quality_threshold)
 
@@ -131,74 +213,54 @@ def process_user(user):
 
         detected_frame_base64 = image_to_base64(detected_frame)
 
-        return {
+        result = {
             "username": username,
             "DATE_TIME": date_time,
-            "result": {
-                "people_count": people_count,
-                "processed_detection_image": detected_frame_base64
-            }
+            "config": config_json,
+            "result": people_count,  # Updated format
+            "processed_detection_image": detected_frame_base64
         }
+        insert_result_into_database(result)
+        return result
     else:
-        return {
+        error_result = {
             "username": username,
             "DATE_TIME": date_time,
+            "config": config_json,
             "error": "Failed to process due to poor stream quality"
         }
+        insert_result_into_database(error_result)
+        return error_result
 
 def main():
-    """
-    Main function to process the PAYLOAD environment variable and handle user-specific operations.
-    """
     try:
         # Fetch the PAYLOAD environment variable
         payload = os.getenv("PAYLOAD")
         if not payload:
             raise ValueError("PAYLOAD environment variable is not set or empty.")
-        print(f"[INFO] RAW PAYLOAD: {payload}")
         
         # Parse the PAYLOAD JSON
-        try:
-            payload_data = json.loads(payload)
-        except json.JSONDecodeError as e:
-            raise ValueError(f"[ERROR] Error parsing PAYLOAD JSON: {e}\nRAW PAYLOAD: {payload}")
+        payload_data = json.loads(payload)
         
-        print(f"[INFO] Parsed PAYLOAD content: {json.dumps(payload_data, indent=4)}")
-
-        # Validate required keys in payload
-        required_keys = ["username", "streaming_URL", "email"]
+        # Required keys
+        required_keys = ["username", "streaming_URL", "email", "Monitoring_status"]
         missing_keys = [key for key in required_keys if key not in payload_data]
         if missing_keys:
-            raise ValueError(f"[ERROR] Missing required keys in PAYLOAD: {missing_keys}")
+            raise ValueError(f"Missing required keys in PAYLOAD: {missing_keys}")
 
-        # Extract user information
-        username = payload_data["username"]
-        streaming_url = payload_data["streaming_URL"]
-        email = payload_data["email"]
-
-        # Process user locally (for example, capture a frame)
-        print(f"[INFO] Processing user: {username} with streaming URL: {streaming_url}")
-
+        # Pass the payload data to the process_user function
         result = process_user(payload_data)
 
         # Return the result as a JSON string
-        print(f"[INFO] Processing completed: {json.dumps(result, indent=4)}")
         return json.dumps(result)
 
-    except ValueError as ve:
-        print(f"[ERROR] ValueError: {ve}")
-        return json.dumps({"status": "error", "message": str(ve), "timestamp": datetime.now().isoformat()})
     except Exception as e:
-        print(f"[ERROR] Unexpected error: {e}")
         return json.dumps({"status": "error", "message": str(e), "timestamp": datetime.now().isoformat()})
-# Entry point for execution
+
+# Example usage
 if __name__ == "__main__":
-    """
-    This block runs when the script is executed directly.
-    It calls the `main` function and handles its output.
-    """
     try:
-        result = main()  # Call the main function
-        print(f"[INFO] Main function execution result: {result}")
+        raw_result = main()
+        print(f"Result: {raw_result}")
     except Exception as e:
-        print(f"[ERROR] An unexpected error occurred during execution: {e}")
+        print(f"[ERROR] An unexpected error occurred: {e}")

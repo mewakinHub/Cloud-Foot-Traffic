@@ -5,7 +5,7 @@ FROM python:3.9-slim
 RUN apt-get update && \
     apt-get install -y curl && \
     apt-get install -y ffmpeg && \
-    pip install yt-dlp opencv-python-headless numpy requests Pillow
+    pip install yt-dlp opencv-python-headless numpy requests Pillow pymysql
 
 # Set the working directory in the container
 WORKDIR /app
