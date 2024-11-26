@@ -6,7 +6,7 @@ Library           BuiltIn
 
 *** Variables ***
 ${SCRIPT_PATH}    /mnt/data/capture_and_detect.py
-${PAYLOAD}        {"username": "testuser", "streaming_URL": "https://www.youtube.com/stream_url", "email": "test@example.com", "Monitoring_status": "active"}
+${PAYLOAD}        {"username": "user1", "streaming_URL": "https://www.youtube.com/live/o4F9RFUzpas?si=Sx8gHWnZ_akIOTw6", "email": "user1@example.com", "Monitoring_status": 1}
 
 *** Test Cases ***
 Test Get Stream URL
