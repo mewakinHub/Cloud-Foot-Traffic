@@ -43,14 +43,14 @@ pipeline {
             }
         }
 
-        stage('Verify AWS CLI') {
-            steps {
-                sh '''
-                echo $PATH
-                aws --version || { echo "AWS CLI is not available"; exit 1; }
-                '''
-            }
-        }
+        // stage('Verify AWS CLI') {
+        //     steps {
+        //         sh '''
+        //         echo $PATH
+        //         aws --version || { echo "AWS CLI is not available"; exit 1; }
+        //         '''
+        //     }
+        // }
 
         stage('Push to ECR') {
             steps {
