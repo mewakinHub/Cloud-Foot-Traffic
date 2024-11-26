@@ -36,8 +36,7 @@ pipeline {
                     dir('microservice/model_inference') {
                         sh '''
                         echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin
-                        docker buildx create --use || true
-                        docker buildx build --platform linux/amd64 -t ${DOCKERHUB_REPO}:latest --load .
+                        docker build -t ${DOCKERHUB_REPO}:latest .
                         '''
                     }
                 }
