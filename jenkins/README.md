@@ -42,20 +42,6 @@ This repository contains configuration files and instructions to set up Jenkins 
     docker pull mewakin/cloud-custom-jenkins
     ```
 
-3. **Run the Jenkins Container with Persistent Storage**:
-
-   Deploy Jenkins with a Docker volume for persistent storage.
-
-    ```bash
-    docker run -d -p 8080:8080 -p 50000:50000 \
-        -v jenkins_home:/var/jenkins_home \
-        --name jenkins-server custom-jenkins
-    ```
-
-4. **Environment Variables for AWS Credentials** (optional):
-
-   Ensure AWS credentials or other sensitive information required for Jenkins jobs are securely set on the Jenkins server. You can do this through environment variables or the Jenkins credentials store.
-
 ### Deploying in Jenkins's dedicated EC2
 
 Since Jenkins is deployed in a private subnet, you’ll need to use the bastion server to access it.
@@ -74,14 +60,20 @@ sudo docker pull mewakin/cloud-custom-jenkins
 sudo docker images ls
 
 # Auto-Restart on Reboot
-sudo docker run -d --restart unless-stopped -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home --name jenkins-server mewakin/cloud-custom-jenkins:latest
-# sudo docker run -d -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home --name jenkins-server mewakin/cloud-custom-jenkins:latest
+# sudo docker run -d --restart unless-stopped -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home --name jenkins-server mewakin/cloud-custom-jenkins:latest
+
+docker run -d \
+  --name jenkins-server \
+  -p 8080:8080 -p 50000:50000 \
+  -v jenkins_home:/var/jenkins_home \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  mewakin/cloud-custom-jenkins:latest
 
 # get password
 sudo docker exec jenkins-server cat /var/jenkins_home/secrets/initialAdminPassword
 
-docker stop <container_name_or_id>
-docker rm <container_name_or_id>
+docker stop jenkins-server
+docker rm jenkins-server
 sudo docker start jenkins-server
 
 sudo docker restart jenkins-server

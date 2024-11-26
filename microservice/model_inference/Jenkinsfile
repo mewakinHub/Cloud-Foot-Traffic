@@ -5,6 +5,8 @@ pipeline {
         AWS_REGION = 'ap-southeast-1'
         ECR_REPO_URI = '891376919848.dkr.ecr.ap-southeast-1.amazonaws.com/youtube-detection-app'
         DOCKERHUB_REPO = 'pansaar1553/youtube-detection-app'
+        DOCKERHUB_USERNAME = credentials('911be91f-9bee-4fab-9944-749709f26585').username
+        DOCKERHUB_PASSWORD = credentials('911be91f-9bee-4fab-9944-749709f26585').password
     }
 
     stages {
@@ -14,11 +16,20 @@ pipeline {
             }
         }
 
+        stage('Install Docker') {
+            steps {
+                sh '''
+                sudo apt-get update
+                sudo apt-get install -y docker.io
+                '''
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 script {
                     dir('microservices/model_inference') {
-                        sh 'docker build -t ${DOCKERHUB_REPO}:latest .'
+                        sh "docker build -t ${DOCKERHUB_REPO}:latest ."
                     }
                 }
             }
@@ -28,7 +39,7 @@ pipeline {
             steps {
                 script {
                     dir('microservices/model_inference') {
-                        // Run the Robot Framework tests inside the Docker container
+                        // Run the Robot Framework tests inside the container
                         sh '''
                         docker run --rm ${DOCKERHUB_REPO}:latest \
                             robot --outputdir /app/output /app/tests
@@ -41,13 +52,11 @@ pipeline {
         stage('Push to ECR') {
             steps {
                 script {
-                    withCredentials([string(credentialsId: 'aws-ecr-login', variable: 'AWS_LOGIN_PASSWORD')]) {
-                        sh '''
-                        echo $AWS_LOGIN_PASSWORD | docker login --username AWS --password-stdin ${ECR_REPO_URI}
-                        docker tag ${DOCKERHUB_REPO}:latest ${ECR_REPO_URI}:latest
-                        docker push ${ECR_REPO_URI}:latest
-                        '''
-                    }
+                    sh '''
+                    aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO_URI}
+                    docker tag ${DOCKERHUB_REPO}:latest ${ECR_REPO_URI}:latest
+                    docker push ${ECR_REPO_URI}:latest
+                    '''
                 }
             }
         }
@@ -55,12 +64,10 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: '911be91f-9bee-4fab-9944-749709f26585', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh '''
-                        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-                        docker push ${DOCKERHUB_REPO}:latest
-                        '''
-                    }
+                    sh '''
+                    echo ${DOCKERHUB_PASSWORD} | docker login -u ${DOCKERHUB_USERNAME} --password-stdin
+                    docker push ${DOCKERHUB_REPO}:latest
+                    '''
                 }
             }
         }
