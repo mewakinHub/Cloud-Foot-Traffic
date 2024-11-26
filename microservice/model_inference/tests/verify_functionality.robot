@@ -1,37 +1,25 @@
-# *** Settings ***
-# Library           Process
-# Library           Collections
-# Library           OperatingSystem
-# Library           json
+*** Settings ***
+Library           RequestsLibrary
+Library           SeleniumLibrary
+Library           BuiltIn
 
-# *** Variables ***
-# ${SCRIPT_PATH}    capture_and_detect.py
-# ${PAYLOAD}        {"username": "user1", "streaming_URL": "https://www.youtube.com/live/o4F9RFUzpas?si=Sx8gHWnZ_akIOTw6", "email": "user1@example.com", "Monitoring_status": 1}
+*** Variables ***
+${BASE_URL}       http://54.179.227.109/dev
+${CONFIG_URL}     ${BASE_URL}/configs
+${BROWSER}        Chrome
 
-# *** Test Cases ***
-# Test Get Stream URL
-#     [Documentation]    Test the retrieval of stream URL using yt-dlp.
-#     ${result}=    Run Process    python3    ${SCRIPT_PATH}    env:PAYLOAD=${PAYLOAD}    stderr=STDOUT
-#     Log    ${result.stdout}
-#     Should Contain    ${result.stdout}    Successfully retrieved stream URL
+*** Test Cases ***
 
-# Test Frame Capture
-#     [Documentation]    Test capturing and processing frames.
-#     ${result}=    Run Process    python3    ${SCRIPT_PATH}    env:PAYLOAD=${PAYLOAD}    stderr=STDOUT
-#     Log    ${result.stdout}
-#     Log    ${result.stderr}
-#     Should Contain    ${result.stdout}    People Count:
+Test Front-End Accessibility
+    [Documentation]    Verify the front-end is accessible and the title is correct.
+    Open Browser       ${BASE_URL}    ${BROWSER}
+    Wait Until Page Contains Element    id:main-content    10s
+    Page Should Contain    Configuration Page
+    [Teardown]    Close All Browsers
 
-# Test Database Insertion
-#     [Documentation]    Ensure that results are inserted into the database correctly.
-#     ${result}=    Run Process    python3    ${SCRIPT_PATH}    env:PAYLOAD=${PAYLOAD}    stderr=STDOUT
-#     Log    ${result.stdout}
-#     Log    ${result.stderr}
-#     Should Not Contain    ${result.stdout}    [ERROR]
-#     Should Contain    ${result.stdout}    Successfully inserted data into Result table
-
-# *** Keywords ***
-# Parse JSON Result
-#     [Arguments]    ${json_string}
-#     ${result}=    Evaluate    json.loads('''${json_string}''')    json
-#     [Return]    ${result}
+Test Configuration Endpoint
+    [Documentation]    Verify the configuration endpoint is accessible and returns a valid response.
+    ${response}=       GET    ${CONFIG_URL}
+    Status Should Be   200
+    Log To Console     ${response.status_code}
+    Should Contain     ${response.body}    "configuration"
