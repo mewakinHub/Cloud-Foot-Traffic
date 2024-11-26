@@ -16,6 +16,15 @@ pipeline {
             }
         }
 
+        stage('Install Docker') {
+            steps {
+                sh '''
+                sudo apt-get update
+                sudo apt-get install -y docker.io
+                '''
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 script {
@@ -30,10 +39,11 @@ pipeline {
             steps {
                 script {
                     dir('microservices/model_inference') {
-                        // Run the Robot Framework tests inside a container
-                        sh """
-                        docker run --rm -v $(pwd)/output:/app/output ${DOCKERHUB_REPO}:latest robot --outputdir /app/output /app/tests
-                        """
+                        // Run the Robot Framework tests inside the container
+                        sh '''
+                        docker run --rm ${DOCKERHUB_REPO}:latest \
+                            robot --outputdir /app/output /app/tests
+                        '''
                     }
                 }
             }
@@ -42,11 +52,11 @@ pipeline {
         stage('Push to ECR') {
             steps {
                 script {
-                    sh """
+                    sh '''
                     aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO_URI}
                     docker tag ${DOCKERHUB_REPO}:latest ${ECR_REPO_URI}:latest
                     docker push ${ECR_REPO_URI}:latest
-                    """
+                    '''
                 }
             }
         }
@@ -54,10 +64,10 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    sh """
+                    sh '''
                     echo ${DOCKERHUB_PASSWORD} | docker login -u ${DOCKERHUB_USERNAME} --password-stdin
                     docker push ${DOCKERHUB_REPO}:latest
-                    """
+                    '''
                 }
             }
         }
@@ -66,8 +76,10 @@ pipeline {
     post {
         always {
             echo 'Cleaning up Docker images...'
-            sh "docker rmi ${DOCKERHUB_REPO}:latest || true"
-            sh "docker rmi ${ECR_REPO_URI}:latest || true"
+            sh '''
+            docker rmi ${DOCKERHUB_REPO}:latest || true
+            docker rmi ${ECR_REPO_URI}:latest || true
+            '''
         }
     }
 }
