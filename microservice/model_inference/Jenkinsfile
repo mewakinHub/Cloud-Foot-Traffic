@@ -28,13 +28,19 @@ pipeline {
             steps {
                 script {
                     sh """
-                    # Remove existing AWS CLI if any
-                    rm -rf /usr/local/aws-cli || true
+                    # Remove any existing AWS CLI installations
+                    rm -rf /usr/local/aws-cli
                     
-                    # Install AWS CLI using Snap
-                    snap install aws-cli --classic
+                    # Download the AWS CLI v2 installer
+                    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
                     
-                    # Verify installation
+                    # Unzip the installer
+                    unzip -o awscliv2.zip
+                    
+                    # Run the install script without requiring 'sudo'
+                    ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
+                    
+                    # Check if AWS CLI is installed correctly
                     aws --version
                     """
                 }
