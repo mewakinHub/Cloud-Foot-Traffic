@@ -5,7 +5,7 @@ pipeline {
         AWS_REGION = 'ap-southeast-1'
         ECR_REPO_URI = '891376919848.dkr.ecr.ap-southeast-1.amazonaws.com/youtube-detection-app'
         DOCKERHUB_REPO = 'pansaar1553/youtube-detection-app'
-        DOCKERHUB_CREDENTIALS = credentials('911be91f-9bee-4fab-9944-749709f26585') // Use credentials ID directly
+        DOCKERHUB_CREDENTIALS = credentials('911be91f-9bee-4fab-9944-749709f26585')
     }
 
     stages {
@@ -15,10 +15,10 @@ pipeline {
             }
         }
 
-        stage('Check Dockerfile') {
+        stage('Debug Workspace') {
             steps {
                 script {
-                    sh 'ls -la microservices/model_inference'
+                    sh 'ls -la ${WORKSPACE}/microservices/model_inference'
                 }
             }
         }
@@ -27,18 +27,16 @@ pipeline {
             steps {
                 script {
                     dir('microservices/model_inference') {
-                        sh "docker build -t ${DOCKERHUB_REPO}:latest ."
+                        sh "docker build -f Dockerfile -t ${DOCKERHUB_REPO}:latest ."
                     }
                 }
             }
         }
 
-
         stage('Test Docker Image') {
             steps {
                 script {
                     dir('microservices/model_inference') {
-                        // Run the Robot Framework tests inside the container
                         sh '''
                         docker run --rm ${DOCKERHUB_REPO}:latest \
                             robot --outputdir /app/output /app/tests
