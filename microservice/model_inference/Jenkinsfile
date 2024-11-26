@@ -24,28 +24,28 @@ pipeline {
         //     }
         // }
 
-        stage('Install AWS CLI') {
-            steps {
-                script {
-                    sh """
-                    # Remove any existing AWS CLI installations
-                    rm -rf /usr/local/aws-cli
+        // stage('Install AWS CLI') {
+        //     steps {
+        //         script {
+        //             sh """
+        //             # Remove any existing AWS CLI installations
+        //             rm -rf /usr/local/aws-cli
                     
-                    # Download the AWS CLI v2 installer
-                    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+        //             # Download the AWS CLI v2 installer
+        //             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
                     
-                    # Unzip the installer
-                    unzip -o awscliv2.zip
+        //             # Unzip the installer
+        //             unzip -o awscliv2.zip
                     
-                    # Run the install script without requiring 'sudo'
-                    ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
+        //             # Run the install script without requiring 'sudo'
+        //             ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
                     
-                    # Check if AWS CLI is installed correctly
-                    aws --version
-                    """
-                }
-            }
-        }
+        //             # Check if AWS CLI is installed correctly
+        //             aws --version
+        //             """
+        //         }
+        //     }
+        // }
 
         stage('Debug Workspace') {
             steps {
@@ -80,7 +80,6 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    export PATH=$PATH:/usr/local/bin
                     aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO_URI}
                     docker tag ${DOCKERHUB_REPO}:latest ${ECR_REPO_URI}:latest
                     docker push ${ECR_REPO_URI}:latest
