@@ -32,7 +32,7 @@ pipeline {
                     dir('microservices/model_inference') {
                         // Run the Robot Framework tests inside a container
                         sh """
-                        docker run --rm ${DOCKERHUB_REPO}:latest robot --outputdir /app/tests/output /app/tests
+                        docker run --rm -v $(pwd)/output:/app/output ${DOCKERHUB_REPO}:latest robot --outputdir /app/output /app/tests
                         """
                     }
                 }

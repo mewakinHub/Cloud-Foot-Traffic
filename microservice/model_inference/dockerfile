@@ -7,7 +7,11 @@ RUN apt-get update && \
     apt-get install -y ffmpeg && \
     pip install yt-dlp opencv-python-headless numpy requests Pillow pymysql
 
-RUN pip install robotframework
+# Install necessary tools
+RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
+
+# Install Robot Framework and necessary libraries
+RUN pip install robotframework robotframework-requests robotframework-seleniumlibrary
 
 # Set the working directory in the container
 WORKDIR /app
@@ -23,6 +27,8 @@ COPY /tests/ /app/tests/
 
 # Define a volume for output images (this will create a Docker-managed volume)
 # VOLUME /app/local_vol/output_images
+# Define a volume for any output data (e.g., logs, test reports, etc.)
+VOLUME /app/output
 
 # Run the application
 CMD ["python", "capture_and_detect.py"]
