@@ -1,113 +1,73 @@
 pipeline {
     agent any
-    
+
     environment {
-        AWS_REGION = 'your-aws-region'             // Set your AWS region
-        ECR_REPO_URI = 'your-ecr-repo-uri'         // E.g., '123456789012.dkr.ecr.us-west-2.amazonaws.com/your-repo'
-        DOCKERHUB_REPO = 'your-dockerhub-repo'     // E.g., 'your-dockerhub-username/your-repo'
-        IMAGE_TAG = "latest"                       // Default image tag
+        AWS_REGION = 'ap-southeast-1'
+        ECR_REPO_URI = '891376919848.dkr.ecr.ap-southeast-1.amazonaws.com/youtube-detection-app'
+        DOCKERHUB_REPO = 'pansaar1553/youtube-detection-app'
+        DOCKERHUB_USERNAME = credentials('911be91f-9bee-4fab-9944-749709f26585').username
+        DOCKERHUB_PASSWORD = credentials('911be91f-9bee-4fab-9944-749709f26585').password
     }
-    
-    options {
-        // Retry steps if they fail to handle intermittent issues
-        retry(2)
-        // Timeout for each stage
-        timeout(time: 10, unit: 'MINUTES')
-    }
-    
-    parameters {
-        string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Tag for the Docker image')
-        string(name: 'BRANCH', defaultValue: 'main', description: 'Branch to build from')
-    }
-    
+
     stages {
         stage('Checkout') {
             steps {
-                script {
-                    echo "Checking out branch: ${params.BRANCH}"
-                    // Checkout specific branch
-                    git branch: "${params.BRANCH}", url: 'https://github.com/mewakinHub/Cloud-Foot-Traffic.git'
-                }
+                git branch: 'main', url: 'https://github.com/mewakinHub/Cloud-Foot-Traffic.git'
             }
         }
-        
+
         stage('Build Docker Image') {
             steps {
                 script {
                     dir('microservices/model_inference') {
-                        // Build Docker image
-                        echo "Building Docker image: ${DOCKERHUB_REPO}:${params.IMAGE_TAG}"
-                        sh "docker build -t ${DOCKERHUB_REPO}:${params.IMAGE_TAG} ."
+                        sh "docker build -t ${DOCKERHUB_REPO}:latest ."
                     }
                 }
             }
         }
-        
-        stage('Login to ECR') {
+
+        stage('Test Docker Image') {
             steps {
                 script {
-                    echo "Authenticating with ECR"
-                    sh """
-                    aws ecr get-login-password --region ${AWS_REGION} | \
-                    docker login --username AWS --password-stdin ${ECR_REPO_URI}
-                    """
+                    dir('microservices/model_inference') {
+                        // Run the Robot Framework tests inside a container
+                        sh """
+                        docker run --rm ${DOCKERHUB_REPO}:latest robot --outputdir /app/tests/output /app/tests
+                        """
+                    }
                 }
             }
         }
-        
+
         stage('Push to ECR') {
             steps {
                 script {
-                    echo "Pushing image to ECR: ${ECR_REPO_URI}:${params.IMAGE_TAG}"
                     sh """
-                    docker tag ${DOCKERHUB_REPO}:${params.IMAGE_TAG} ${ECR_REPO_URI}:${params.IMAGE_TAG}
-                    docker push ${ECR_REPO_URI}:${params.IMAGE_TAG}
+                    aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO_URI}
+                    docker tag ${DOCKERHUB_REPO}:latest ${ECR_REPO_URI}:latest
+                    docker push ${ECR_REPO_URI}:latest
                     """
                 }
             }
         }
-        
-        stage('Login to Docker Hub') {
-            environment {
-                DOCKERHUB_USERNAME = credentials('dockerhub-username')
-                DOCKERHUB_PASSWORD = credentials('dockerhub-password')
-            }
-            steps {
-                script {
-                    echo "Authenticating with Docker Hub"
-                    sh """
-                    echo ${DOCKERHUB_PASSWORD} | \
-                    docker login -u ${DOCKERHUB_USERNAME} --password-stdin
-                    """
-                }
-            }
-        }
-        
+
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    echo "Pushing image to Docker Hub: ${DOCKERHUB_REPO}:${params.IMAGE_TAG}"
-                    sh "docker push ${DOCKERHUB_REPO}:${params.IMAGE_TAG}"
+                    sh """
+                    echo ${DOCKERHUB_PASSWORD} | docker login -u ${DOCKERHUB_USERNAME} --password-stdin
+                    docker push ${DOCKERHUB_REPO}:latest
+                    """
                 }
             }
         }
     }
-    
+
     post {
         always {
-            script {
-                echo "Cleaning up Docker environment"
-                sh """
-                docker rmi ${DOCKERHUB_REPO}:${params.IMAGE_TAG} || true
-                docker rmi ${ECR_REPO_URI}:${params.IMAGE_TAG} || true
-                """
-            }
-        }
-        failure {
-            echo "Build failed. Please check logs for details."
-        }
-        success {
-            echo "Build succeeded and images are pushed successfully."
+            echo 'Cleaning up Docker images...'
+            sh "docker rmi ${DOCKERHUB_REPO}:latest || true"
+            sh "docker rmi ${ECR_REPO_URI}:latest || true"
         }
     }
 }

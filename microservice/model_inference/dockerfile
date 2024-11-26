@@ -7,6 +7,8 @@ RUN apt-get update && \
     apt-get install -y ffmpeg && \
     pip install yt-dlp opencv-python-headless numpy requests Pillow pymysql
 
+RUN pip install robotframework
+
 # Set the working directory in the container
 WORKDIR /app
 
@@ -15,6 +17,9 @@ WORKDIR /app
 # COPY temp.py /app/
 COPY cookie.txt /app/cookie.txt
 COPY capture_and_detect.py /app/
+
+# Copy test cases to the container
+COPY /tests/ /app/tests/
 
 # Define a volume for output images (this will create a Docker-managed volume)
 # VOLUME /app/local_vol/output_images
