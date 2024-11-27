@@ -1,15 +1,23 @@
 # Start from the official Jenkins LTS image
 FROM jenkins/jenkins:lts
 
-# Install necessary plugins by specifying them in the plugins.txt file
+# Switch to root user to install dependencies
+USER root
+
+# Install Docker CLI
+RUN apt-get update && apt-get install -y docker.io && rm -rf /var/lib/apt/lists/*
+
+# Install necessary plugins and configuration
 COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
 RUN jenkins-plugin-cli --plugins < /usr/share/jenkins/ref/plugins.txt
 
-# Optionally, configure Jenkins using JCasC
 COPY jenkins.yaml /var/jenkins_home/jenkins.yaml
 
-# Set environment variables for JCasC if using
-ENV CASC_JENKINS_CONFIG=/var/jenkins_home/jenkins.yaml
+# Ensure Jenkins user has permissions to use Docker
+RUN usermod -aG docker jenkins
+
+# Switch back to Jenkins user
+USER jenkins
 
 # Expose Jenkins ports
 EXPOSE 8080 50000

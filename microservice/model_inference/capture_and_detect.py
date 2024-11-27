@@ -1,51 +1,15 @@
-import cv2
-import numpy as np
-import subprocess
-import yt_dlp
-import time
 import os
-import base64
 import json
 from datetime import datetime
-import requests
+import base64
+import cv2
+import subprocess
+import time
+import numpy as np
+import yt_dlp
+import pymysql
 
-API_KEY = os.getenv("SHOTSTACK_API_KEY")
-API_URL = "https://api.shotstack.io/stage/render"  # Sandbox URL
-
-headers = {"x-api-key": API_KEY}
-
-# Define constants
-youtube_url = 'https://www.youtube.com/live/gFRtAAmiFbE?si=L13Lyq4dNpBqVka3'
-quality_threshold = 300
-capture_duration = 45  # seconds
-max_attempts = 5
-retry_interval = 5  # seconds between retries
-
-start_time = time.time()
-best_frame = None
-best_quality = 0
-
-# Shotstack API configuration
-SHOTSTACK_API_KEY = "pG9EMlF4g5awLHozfjyWeqzwLa6QPfG05IAHmS3u"
-SHOTSTACK_API_URL = "https://api.shotstack.io/stage/render"
-QUALITY_THRESHOLD = 300
-YOUTUBE_LIVE_URL = "https://www.youtube.com/live/gFRtAAmiFbE?si=L13Lyq4dNpBqVka3"
-
-# yt-dlp configuration
-youtube_url = 'https://www.youtube.com/live/gFRtAAmiFbE?si=L13Lyq4dNpBqVka3'
-quality_threshold = 300
-capture_duration = 45  # seconds
-max_attempts = 5
-retry_interval = 5  # seconds between retries
-
-# local test
-OUTPUT_IMAGE_PATH = "./local_vol/output_images"
-
-# cloud test
-#TODO: os.getenv stuff to get env from ECS task definition, which's overriden by Controller Lambda
-
-# start ----------------------------
-
+# Function to retrieve YouTube stream URL using yt-dlp
 def get_stream_url(youtube_url):
     try:
         ydl_opts = {
@@ -81,36 +45,31 @@ def detect_people(frame):
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
     return frame, len(boxes)
 
-# Main capturing logic with retries
-def capture_best_frame():
-    global best_frame, best_quality
+# Function to capture the best frame designed by Mewak1n
+def capture_best_frame(youtube_url, capture_duration, quality_threshold, max_attempts=5, retry_interval=5):
+    best_frame = None
+    best_quality = 0
+    start_time = time.time()
     attempts = 0
     stream_url = get_stream_url(youtube_url)
-    print("Stream URL:", stream_url)
-    
+
     while attempts < max_attempts and (time.time() - start_time) < capture_duration:
         if not stream_url:
             print("Failed to retrieve a valid stream URL. Exiting.")
-            return False
-        
+            return False, None, None
+
         print(f"Attempt {attempts + 1}/{max_attempts} to capture frame...")
 
-        # Define FFmpeg command to capture a single frame
         ffmpeg_command = [
             "ffmpeg",
             "-i", stream_url,
-            "-frames:v", "1",  # Capture only 1 frame
-            "-q:v", "2",       # High-quality image
-            "-y",              # Overwrite output file
+            "-frames:v", "1",
+            "-q:v", "2",
+            "-y",
             "temp_frame.jpg"
         ]
 
-        # Run FFmpeg command to capture a frame
         result = subprocess.run(ffmpeg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        ffmpeg_output = result.stderr.decode()
-        print("FFmpeg log:", ffmpeg_output)
-
-        # Attempt to load the saved frame with OpenCV
         frame = cv2.imread("temp_frame.jpg")
         if frame is None:
             print("Error reading frame from temp file. Retrying...")
@@ -118,7 +77,6 @@ def capture_best_frame():
             time.sleep(retry_interval)
             continue
 
-        # Calculate quality and decide if it's the best frame so far
         quality = calculate_quality(frame)
         print(f"Captured frame quality: {quality}")
 
@@ -128,69 +86,180 @@ def capture_best_frame():
 
         if quality > quality_threshold:
             print("Captured frame meets quality threshold. Stopping capture.")
-            os.remove("temp_frame.jpg")  # Clean up
-            return True  # Success
+            os.remove("temp_frame.jpg")
+            return True, best_frame, best_quality
 
-        os.remove("temp_frame.jpg")  # Clean up after each attempt
+        os.remove("temp_frame.jpg")
         attempts += 1
 
     print("Failed to capture a high-quality frame after multiple attempts.")
-    return False
+    return False, None, None
 
-# Enhanced overlay function with outline for readability
+# Function to overlay text
 def overlay_text(image, text, position):
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 1
     thickness = 2
-    outline_thickness = 3  # Outline thickness
-    color = (255, 255, 255)  # White text
-    outline_color = (0, 0, 0)  # Black outline
-    # Draw outline
+    outline_thickness = 3
+    color = (255, 255, 255)
+    outline_color = (0, 0, 0)
     cv2.putText(image, text, position, font, font_scale, outline_color, outline_thickness, cv2.LINE_AA)
-    # Draw text
     cv2.putText(image, text, position, font, font_scale, color, thickness, cv2.LINE_AA)
 
-# Function to convert image to base64
+# Function to convert image to Base64
 def image_to_base64(image):
     _, buffer = cv2.imencode('.jpg', image)
     return base64.b64encode(buffer).decode("utf-8")
 
-# Execute capture and detection, and return results in JSON format
-def main():
-    static_config = {
-        "user_id": "user_1",
-        "DATE-TIME": datetime.now().isoformat(),  # Dynamically generate current date and time
-        "config": {
-            "Monitoring_status": True,
-            "streaming_URL": "https://example.com/stream",
-            "email": "user@example.com"
-        }
+# RDS connection details
+RDS_HOST = "des424-g09-rds.cpqayo04ersh.ap-southeast-1.rds.amazonaws.com"
+DB_USERNAME = "admin"
+DB_PASSWORD = "group9login"
+DB_NAME = "CCTV_service"
+
+def insert_result_into_database(result):
+    """
+    Inserts data into the Result table.
+    Handles both success and error cases.
+    """
+    try:
+        # Connect to the RDS database
+        connection = pymysql.connect(
+            host=RDS_HOST,
+            user=DB_USERNAME,
+            password=DB_PASSWORD,
+            database=DB_NAME,
+            connect_timeout=5
+        )
+        with connection.cursor() as cursor:
+            if "result" in result and isinstance(result["result"], int):
+                # Insert successful result
+                sql_query = """
+                    INSERT INTO Result (username, DATE_TIME, config, result, processed_detection_image) 
+                    VALUES (%s, %s, %s, %s, %s)
+                """
+                cursor.execute(
+                    sql_query,
+                    (
+                        result["username"],
+                        result["DATE_TIME"],
+                        result["config"],
+                        result["result"],  # This is the detected people count as an integer
+                        result["processed_detection_image"]
+                    )
+                )
+            else:
+                # Insert failed result
+                sql_query = """
+                    INSERT INTO Result (username, DATE_TIME, config, error_message) 
+                    VALUES (%s, %s, %s, %s)
+                """
+                cursor.execute(
+                    sql_query,
+                    (
+                        result["username"],
+                        result["DATE_TIME"],
+                        result["config"],
+                        result["error"]
+                    )
+                )
+            # Commit transaction
+            connection.commit()
+            print("[INFO] Successfully inserted data into Result table.")
+    except Exception as e:
+        print(f"[ERROR] Failed to insert data into database: {e}")
+    finally:
+        if connection:
+            connection.close()
+
+def sanitize_config(config_data):
+    """
+    Removes backslashes and forward slashes from the config values.
+    """
+    sanitized_config = {
+        key: str(value).replace("\\", "").replace("/", "")
+        for key, value in config_data.items()
     }
-    
-    if capture_best_frame():
+    return sanitized_config
+
+def process_user(user):
+    streaming_url = user["streaming_URL"] 
+    email = user["email"]
+    username = user["username"]
+    monitoring_status = user["Monitoring_status"]
+
+    print(f"Processing user: {username} with stream URL: {streaming_url}")
+
+    capture_duration = 45
+    quality_threshold = 300
+    date_time = datetime.now().isoformat()
+
+    # Create the config JSON string
+    raw_config = {
+        "Monitoring_status": monitoring_status,
+        "streaming_URL": streaming_url,
+        "email": email
+    }
+    sanitized_config = sanitize_config(raw_config)
+    config_json = json.dumps(sanitized_config)
+
+    success, best_frame, best_quality = capture_best_frame(streaming_url, capture_duration, quality_threshold)
+
+    if success:
         detected_frame, people_count = detect_people(best_frame)
         overlay_text(detected_frame, f"People Count: {people_count}", (10, 30))
-        overlay_text(detected_frame, f"Source: {youtube_url}", (10, 60))
+        overlay_text(detected_frame, f"Source: {streaming_url}", (10, 60))
 
-        # Convert images to base64
-        best_frame_base64 = image_to_base64(best_frame)
         detected_frame_base64 = image_to_base64(detected_frame)
 
-        # Return result as JSON
         result = {
-            **static_config,
-            "result": {
-                "people_count": people_count
-            },
+            "username": username,
+            "DATE_TIME": date_time,
+            "config": config_json,
+            "result": people_count,  # Updated format
             "processed_detection_image": detected_frame_base64
         }
-        return json.dumps(result)
+        insert_result_into_database(result)
+        return result
     else:
-        return json.dumps({
-            **static_config,
-            "error": "Capture and detection process failed."
-        })
+        error_result = {
+            "username": username,
+            "DATE_TIME": date_time,
+            "config": config_json,
+            "error": "Failed to process due to poor stream quality"
+        }
+        insert_result_into_database(error_result)
+        return error_result
 
+def main():
+    try:
+        # Fetch the PAYLOAD environment variable
+        payload = os.getenv("PAYLOAD")
+        if not payload:
+            raise ValueError("PAYLOAD environment variable is not set or empty.")
+        
+        # Parse the PAYLOAD JSON
+        payload_data = json.loads(payload)
+        
+        # Required keys
+        required_keys = ["username", "streaming_URL", "email", "Monitoring_status"]
+        missing_keys = [key for key in required_keys if key not in payload_data]
+        if missing_keys:
+            raise ValueError(f"Missing required keys in PAYLOAD: {missing_keys}")
+
+        # Pass the payload data to the process_user function
+        result = process_user(payload_data)
+
+        # Return the result as a JSON string
+        return json.dumps(result)
+
+    except Exception as e:
+        return json.dumps({"status": "error", "message": str(e), "timestamp": datetime.now().isoformat()})
+
+# Example usage
 if __name__ == "__main__":
-    result_json = main()
-    print(result_json)
+    try:
+        raw_result = main()
+        print(f"Result: {raw_result}")
+    except Exception as e:
+        print(f"[ERROR] An unexpected error occurred: {e}")

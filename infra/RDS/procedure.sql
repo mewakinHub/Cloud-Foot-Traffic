@@ -25,11 +25,11 @@ BEGIN
                 SELECT `result_id` AS result_id_to_delete
                 FROM `Result`
                 WHERE `user_id` = current_user_id
-                ORDER BY `DATE-TIME`
+                ORDER BY `result_id` ASC
                 LIMIT 1
             ) AS oldest_row
         );
     END LOOP;
     
     CLOSE user_cursor;
-EN
+END
