@@ -74,18 +74,17 @@ scp -i "group9Key.pem" /path/on/bastion/file ec2-user@<JENKINS_SERVER_IP>:/path/
 scp -i group9Key.pem group9Key.pem ubuntu@54.169.55.224:/ubuntu/home (from local terminal)
 ```
 
-#### 2. SSH into the Jenkins Server via Bastion
+<!-- #### 2. SSH into the Jenkins Server via Bastion
 
 Once on the bastion server, use the `group9Key.pem` key file to access the Jenkins server.
 
 ```bash
 ssh -i "group9Key.pem" ec2-user@<JENKINS_SERVER_IP>
-ssh -i "group9Key.pem" ubuntu@10.0.138.34
+ssh -i "group9Key.pem" ubuntu@10.0.138.34 -->
 
+```
 sudo docker pull mewakin/cloud-custom-jenkins
 sudo docker images
-# sudo docker run -d -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home --name jenkins-server mewakin/cloud-custom-jenkins:latest
-sudo docker start jenkins-server
 
 docker stop <container_name_or_id>
 docker rm <container_name_or_id>
@@ -98,8 +97,8 @@ sudo docker start jenkins-server
 # get password
 sudo docker exec jenkins-server cat /var/jenkins_home/secrets/initialAdminPassword
 ```
-[website: http://<JENKINS_SERVER_IP>:8080](http://18.142.225.7:8080)
-get password: 716e784616324eefade98c9563bfb648
+[website: http://<JENKINS_SERVER_IP>:8080](http://54.81.57.229:8080)
+get password: [716e784616324eefade98c9563bfb648](http://54.81.57.229:8080)
 
 <!-- #### 3. Access Jenkins Web Interface
 
